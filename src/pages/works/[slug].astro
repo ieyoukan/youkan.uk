@@ -1,12 +1,10 @@
 ---
-import { getImage } from "astro:assets";
 import { type CollectionEntry, getCollection, render } from "astro:content";
 import { css, cx } from "@styled/css";
-import videomockSrc from "../../assets/hero/videomock.png";
 import BackLink from "../../components/BackLink.astro";
 import Layout from "../../layouts/Layout.astro";
-import { fetchOgpImage } from "../../lib/ogp";
 import { markdownStyles } from "../../styles/markdown";
+import { getWorkImage } from "../../lib/workImage";
 
 // ビルド時に全作品ぶん生成（画像最適化のため。index.astro 参照）
 export const prerender = true;
@@ -25,9 +23,7 @@ const { title, description, url, githubUrl, image, tags } = work.data;
 // 本文（src/content/works/*.mdx の frontmatter 以降）
 const { Content } = await render(work);
 const hasBody = Boolean(work.body?.trim());
-const ogpImage = (!image && url) ? await fetchOgpImage(url) : undefined;
-const fallbackImage = (await getImage({ src: videomockSrc, format: "webp", quality: 85 })).src;
-const imgSrc = image ?? ogpImage ?? fallbackImage;
+const { src: imgSrc, original: ogImage } = await getWorkImage({ image, url }, 1280);
 
 const pageStyles = css({
 	minHeight: "100vh",
@@ -150,7 +146,7 @@ const linkGhStyles = css({
 });
 ---
 
-<Layout title={`${title} — ようかんのホームページ`} description={description} ogImage={image ?? ogpImage}>
+<Layout title={`${title} — ようかんのホームページ`} description={description} ogImage={ogImage}>
 	<div class={pageStyles}>
 		<BackLink href="/works" label="作品一覧に戻る" />
 

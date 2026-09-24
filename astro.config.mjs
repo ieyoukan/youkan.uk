@@ -14,10 +14,24 @@ export default defineConfig({
 	site: "https://youkan.uk",
 	output: "server",
 	adapter: cloudflare(),
-	integrations: [mdx()],
+	integrations: [
+		mdx(),
+		{
+			// /misskey 配下を全てビルド時に生成する（画像最適化のため。src/pages/index.astro 参照）
+			// .md ページは `export const prerender` を書けないため、ルート設定フックでまとめて指定する
+			name: "prerender-misskey",
+			hooks: {
+				"astro:route:setup": ({ route }) => {
+					if (route.component.startsWith("src/pages/misskey/")) route.prerender = true;
+				},
+			},
+		},
+	],
 	image: {
-		// 絵セクション: pixiv の埋め込み用画像をビルド時に取得して WebP 化する
-		domains: ["embed.pixiv.net"],
+		// リモート画像（pixiv の埋め込み画像・作品の OGP 画像など）をビルド時に取得して WebP 化する。
+		// 作品を足すたびにドメインを書き足さなくて済むよう https はすべて許可し、
+		// 実行時の /_image は src/middleware.ts で塞ぐ（オープンリダイレクト対策）
+		remotePatterns: [{ protocol: "https" }],
 	},
 	session: {
 		// unstorage memory driver: prevents @astrojs/cloudflare from

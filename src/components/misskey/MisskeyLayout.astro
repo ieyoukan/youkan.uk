@@ -1,5 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import { css, cx } from "@styled/css";
+import bannerSrc from "../../assets/misskey/banner.png";
+import iconSrc from "../../assets/misskey/icon.png";
 import GlobalLayout from "../../layouts/Layout.astro";
 import { markdownStyles } from "../../styles/markdown";
 
@@ -157,9 +160,9 @@ const backHomeBtnStyle = css({
 <GlobalLayout title={`Misskey - ${title}`} description={description}>
 	<div class={containerStyle} data-animate>
 		<a href="https://mi.youkan.uk/" target="_blank" rel="noopener noreferrer" class={bannerContainerStyle}>
-			<img src="/misskey/assets/banner.png" alt="Misskey Banner" class={bannerImgStyle} />
+			<Image src={bannerSrc} alt="Misskey Banner" class={bannerImgStyle} widths={[800, 1600]} sizes="(max-width: 800px) 100vw, 800px" format="webp" quality={85} loading="eager" />
 			<div class="overlay">
-				<img src="/misskey/assets/icon.png" alt="Misskey Icon" class={overlayIconStyle} />
+				<Image src={iconSrc} alt="Misskey Icon" class={overlayIconStyle} width={144} height={144} format="webp" quality={85} />
 				<div style="display: flex; align-items: center; gap: 0.5rem;">
 					<h2 class={overlayTitleStyle}>ようかんのみすきー</h2>
 					<svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

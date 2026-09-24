@@ -1,8 +1,6 @@
 ---
-import { getImage } from "astro:assets";
 import { css } from "@styled/css";
-import videomockSrc from "../../assets/hero/videomock.png";
-import { fetchOgpImage } from "../../lib/ogp";
+import { getWorkImage } from "../../lib/workImage";
 
 interface Props {
 	slug: string;
@@ -15,10 +13,8 @@ interface Props {
 
 const { slug, title, description, image, url, tags = [] } = Astro.props;
 
-const fallbackImage = (await getImage({ src: videomockSrc, format: "webp", quality: 85 })).src;
-// 画像: 指定あり → OGP フェッチ → フォールバック の順
-const ogpImage = (!image && url) ? await fetchOgpImage(url) : undefined;
-const imgSrc = image ?? ogpImage ?? fallbackImage;
+// カードの表示幅は最大 320px 程度なので、高解像度端末向けに 2 倍で生成する
+const { src: imgSrc } = await getWorkImage({ image, url }, 640);
 
 const wrapClass = css({
 	display: "block",

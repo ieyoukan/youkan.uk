@@ -1,5 +1,7 @@
 ---
+import { Image } from "astro:assets";
 import { css } from "@styled/css";
+import misskeyIconSrc from "../../assets/misskey/icon.png";
 import SectionBackground from "../SectionBackground.astro";
 
 // SectionBackground が position/overflow/backgroundColor を担当するためここでは不要
@@ -126,7 +128,7 @@ const serverRackStyles = css({
 						borderColor: "rgba(255, 255, 255, 0.3)",
 					}
 				})}>
-					<img src="/misskey/assets/icon.png" alt="Misskey Icon" class={css({ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" })} />
+					<Image src={misskeyIconSrc} alt="Misskey Icon" width={72} height={72} format="webp" quality={85} class={css({ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" })} />
 					ようかんのみすきー を見る
 				</a>
 			</div>

@@ -27,6 +27,5 @@ pnpm-debug.log*
 styled-system
 styled-system-studio
 
-# auto-generated misskey icons
-public/misskey/assets/icon-192.png
-public/misskey/assets/icon-512.png
+# auto-generated misskey assets (source: src/assets/misskey/, scripts/generate-misskey-icons.mjs)
+public/misskey/assets/
