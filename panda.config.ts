@@ -39,15 +39,9 @@ export default defineConfig({
 				},
 			},
 			keyframes: {
-				// カーソル水紋エフェクト（GlobalLayout.astro の is:global CSS でも定義）
-				waterDrop: {
-					"0%":   { transform: "translate(-50%, -50%) scale(0.2)", opacity: "0.6" },
-					"100%": { transform: "translate(-50%, -50%) scale(3.5)", opacity: "0" },
-				},
 				// About のポラロイド: クリックで下へ落ちる
 				polaroidFall: {
 					"0%":   { transform: "rotate(-3deg)", opacity: "1" },
-					"20%":  { transform: "translateY(-14px) rotate(-7deg)", opacity: "1" },
 					"100%": { transform: "translateY(70vh) rotate(20deg)", opacity: "0" },
 				},
 				// About のポラロイド: 上から新しいカードがふわっと降りてくる

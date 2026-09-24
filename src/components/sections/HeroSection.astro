@@ -45,6 +45,34 @@ const subtitleStyles = css({
 	marginBottom: "2rem",
 	letterSpacing: "0.1em",
 });
+
+const voicePlayerStyles = css({
+	marginTop: "2rem",
+	display: "flex",
+	flexDirection: "column",
+	alignItems: "center",
+	gap: "0.5rem",
+});
+
+const voiceLabelStyles = css({
+	fontSize: "0.8rem",
+	letterSpacing: "0.12em",
+	color: "#888",
+});
+
+const voiceButtonStyles = css({
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
+	width: "36px",
+	height: "36px",
+	background: "none",
+	border: "1px solid rgba(100,100,120,0.35)",
+	borderRadius: "50%",
+	color: "#666",
+	cursor: "pointer",
+	transition: "border-color 0.2s, color 0.2s",
+});
 ---
 
 <section id="hero" class={heroStyles}>
@@ -55,13 +83,9 @@ const subtitleStyles = css({
 		<p class={subtitleStyles}>Dev & VTuber / House Cat</p>
 
 		<!-- サンプルボイス再生プレーヤー（シンプルデザイン） -->
-		<div id="voice-player" style="margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-			<span style="font-size: 0.8rem; letter-spacing: 0.12em; color: #888; font-family: 'Zen Maru Gothic', sans-serif;">サンプルボイス</span>
-			<button
-				id="voice-play-btn"
-				aria-label="Play Voice Sample"
-				style="background: none; border: 1px solid rgba(100,100,120,0.35); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #666; transition: border-color 0.2s, color 0.2s;"
-			>
+		<div id="voice-player" class={voicePlayerStyles}>
+			<span class={voiceLabelStyles}>サンプルボイス</span>
+			<button id="voice-play-btn" aria-label="サンプルボイスを再生" class={voiceButtonStyles}>
 				<svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor">
 					<path d="M0 0 L12 7 L0 14 Z" />
 				</svg>

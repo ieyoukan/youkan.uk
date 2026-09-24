@@ -3,10 +3,12 @@ import "../index.css";
 import { getImage } from "astro:assets";
 import { css } from "@styled/css";
 import videomockSrc from "../assets/hero/videomock.png";
-import MetaHead from "./MetaHead.astro";
 import MouseStalker from "../components/MouseStalker.astro";
+import MetaHead from "./MetaHead.astro";
 
 const poster = await getImage({ src: videomockSrc, format: "webp", quality: 85 });
+// OGP は WebP 非対応の SNS があるため PNG で出力する
+const ogPoster = await getImage({ src: videomockSrc, format: "png", width: 1280, height: 720 });
 
 interface Props {
 	title?: string;
@@ -16,7 +18,7 @@ interface Props {
 
 const { title, description, ogImage } = Astro.props;
 // OGP 未指定時は処理済みアセット URL を使用（public/ 不要）
-const defaultOgImage = Astro.url.origin + poster.src;
+const defaultOgImage = Astro.url.origin + ogPoster.src;
 
 const videoBgStyles = css({
 	position: "fixed",
@@ -76,11 +78,8 @@ const wrapperStyles = css({
 	);
 	document.querySelectorAll("[data-animate]").forEach((el) => observer.observe(el));
 
-	// ===== カスタムカーソル（水紋トレイル） =====
-	// cursor: none（index.css）に合わせて、ドット＋水紋を JS で管理する
-	const dot = document.createElement("div");
-	dot.id = "cursor-dot";
-	document.body.appendChild(dot);
+	// ===== カーソル演出（水紋トレイル＋クリックの輪） =====
+	// カーソル本体は MouseStalker.astro が担当する
 
 	// 最後の水紋生成時刻（スロットル用）
 	let lastRipple = 0;
@@ -99,7 +98,6 @@ const wrapperStyles = css({
 	}
 
 	document.addEventListener("mousemove", (e) => {
-		dot.style.translate = `${e.clientX}px ${e.clientY}px`;
 		spawnRipple(e.clientX, e.clientY);
 	});
 
@@ -188,21 +186,6 @@ const wrapperStyles = css({
 		to   { background-position: -360px 0; }
 	}
 
-	/* ===== カスタムカーソル ===== */
-	#cursor-dot {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: rgba(125, 211, 252, 0.9);
-		transform: translate(-50%, -50%);
-		pointer-events: none;
-		z-index: 9999;
-		mix-blend-mode: multiply;
-	}
-
 	/* 水紋トレイル: mousemove のたびに JS で生成・削除 */
 	.cursor-ripple {
 		position: fixed;
@@ -234,21 +217,5 @@ const wrapperStyles = css({
 	@keyframes burstOut {
 		0%   { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
 		100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-	}
-
-	/* MouseStalker クリックバースト */
-	.star-burst {
-		position: fixed;
-		width: 40px;
-		height: 40px;
-		background: radial-gradient(circle, rgba(255, 107, 107, 1) 0%, rgba(255, 255, 255, 0) 70%);
-		transform: translate(-50%, -50%);
-		pointer-events: none;
-		z-index: 9998;
-		animation: starPop 0.5s ease-out forwards;
-	}
-	@keyframes starPop {
-		0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-		100% { transform: translate(-50%, -50%) scale(2);   opacity: 0; }
 	}
 </style>

@@ -56,15 +56,6 @@ const cursorClass = css({
 		requestAnimationFrame(animate);
 	})();
 
-	document.addEventListener("click", (e) => {
-		const burst = document.createElement("div");
-		burst.className = "star-burst";
-		burst.style.left = `${e.clientX}px`;
-		burst.style.top = `${e.clientY}px`;
-		document.body.appendChild(burst);
-		burst.addEventListener("animationend", () => burst.remove(), { once: true });
-	});
-
 	document.addEventListener("mouseover", (e) => {
 		if (e.target instanceof Element && (e.target.closest("a") || e.target.closest("button"))) {
 			cursorImg.src = pointerSrc;

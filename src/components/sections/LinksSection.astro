@@ -1,6 +1,6 @@
 ---
 import { socialLinks } from "@consts/links";
-import { css } from "@styled/css";
+import { css, cx } from "@styled/css";
 import LinkIcon from "../LinkIcon.astro";
 import SectionBackground from "../SectionBackground.astro";
 
@@ -73,6 +73,7 @@ const featuredCardStyles = css({
 	padding: "2rem 2.5rem",
 	marginBottom: "1.5rem",
 	boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
+	border: "1px solid color-mix(in srgb, var(--link-color) 33%, transparent)",
 	color: "#333",
 	transition: "transform 0.3s ease, box-shadow 0.3s ease",
 	_hover: {
@@ -108,6 +109,8 @@ const cardStyles = css({
 	_hover: {
 		transform: "translateY(-4px) scale(1.03)",
 		boxShadow: "0 8px 28px rgba(0,0,0,0.11)",
+		// ホバー時にカードアクセントカラーで縁取り
+		borderColor: "var(--link-color)",
 	},
 });
 
@@ -125,6 +128,83 @@ const ogpCardStyles = css({
 		boxShadow: "0 8px 28px rgba(0,0,0,0.18)",
 	},
 });
+// 以下のパーツは links.ts の color を CSS 変数 --link-color で受け取る
+const featuredRowStyles = css({
+	display: "flex",
+	alignItems: "center",
+	gap: "1.5rem",
+	flexWrap: "wrap",
+});
+
+const iconBoxStyles = css({
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center",
+	flexShrink: 0,
+	overflow: "hidden",
+	background: "var(--link-color)",
+});
+
+const featuredIconStyles = cx(iconBoxStyles, css({ width: "56px", height: "56px", borderRadius: "14px" }));
+const cardIconStyles = cx(iconBoxStyles, css({ width: "48px", height: "48px", borderRadius: "12px" }));
+
+const featuredHeadStyles = css({
+	display: "flex",
+	alignItems: "center",
+	gap: "0.6rem",
+	flexWrap: "wrap",
+	marginBottom: "0.25rem",
+});
+
+const featuredLabelStyles = css({
+	fontSize: "1.3rem",
+	fontWeight: "bold",
+	color: "var(--link-color)",
+});
+
+const badgeStyles = css({
+	fontSize: "0.72rem",
+	fontWeight: "bold",
+	background: "var(--link-color)",
+	color: "white",
+	padding: "0.15rem 0.5rem",
+	borderRadius: "20px",
+	letterSpacing: "0.04em",
+});
+
+const featuredDescStyles = css({ fontSize: "0.9rem", color: "#666" });
+
+const cardLabelStyles = css({
+	fontSize: "0.95rem",
+	fontWeight: "bold",
+	color: "#4a4a4a",
+	textAlign: "center",
+});
+
+const cardDescStyles = css({ fontSize: "0.75rem", color: "#888", textAlign: "center" });
+
+const ogpImgStyles = css({
+	position: "absolute",
+	inset: 0,
+	width: "100%",
+	height: "100%",
+	objectFit: "cover",
+});
+
+const ogpLabelStyles = css({
+	position: "absolute",
+	bottom: 0,
+	left: 0,
+	right: 0,
+	padding: "0.4rem 0.6rem 0.6rem",
+	fontSize: "0.85rem",
+	fontWeight: "bold",
+	color: "white",
+	background: "linear-gradient(transparent, rgba(0,0,0,0.55))",
+	textAlign: "center",
+});
+
+const linkColorVars = (color: string) => `--link-color: ${color}`;
 ---
 
 <!-- bigBottom: 下波を大きくしてAboutセクション（透過）との境界を強調 -->
@@ -139,34 +219,20 @@ const ogpCardStyles = css({
 					<a
 						href={link.url}
 						class={featuredCardStyles}
-						style={`border: 1px solid ${link.color}55`}
+						style={linkColorVars(link.color)}
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						<div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-							<div
-								style={`width: 56px; height: 56px; border-radius: 14px; background: ${link.color}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;`}
-							>
+						<div class={featuredRowStyles}>
+							<div class={featuredIconStyles}>
 								<LinkIcon icon={link.icon} color="white" size={32} ogpSrc={null} />
 							</div>
-							<div style="flex: 1;">
-								<div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.25rem;">
-									<span
-										style={`font-size: 1.3rem; font-weight: bold; color: ${link.color}; font-family: 'Zen Maru Gothic', sans-serif;`}
-									>
-										{link.label}
-									</span>
-									{link.isHomeServer && (
-										<span
-											style={`font-size: 0.72rem; font-weight: bold; background: ${link.color}; color: white; padding: 0.15rem 0.5rem; border-radius: 20px; letter-spacing: 0.04em;`}
-										>
-											自宅サーバー
-										</span>
-									)}
+							<div class={css({ flex: 1 })}>
+								<div class={featuredHeadStyles}>
+									<span class={featuredLabelStyles}>{link.label}</span>
+									<span class={badgeStyles}>自宅サーバー</span>
 								</div>
-								{link.description && (
-									<div style="font-size: 0.9rem; color: #666;">{link.description}</div>
-								)}
+								{link.description && <div class={featuredDescStyles}>{link.description}</div>}
 							</div>
 						</div>
 					</a>
@@ -182,14 +248,8 @@ const ogpCardStyles = css({
 							// OGP画像あり: 全面表示
 							return (
 								<a href={link.url} class={ogpCardStyles} target="_blank" rel="noopener noreferrer">
-									<img
-										src={ogp}
-										alt={link.label}
-										style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
-									/>
-									<span style="position:absolute;bottom:0;left:0;right:0;padding:0.4rem 0.6rem 0.6rem;font-size:0.85rem;font-weight:bold;color:white;background:linear-gradient(transparent,rgba(0,0,0,0.55));text-align:center;font-family:'Zen Maru Gothic',sans-serif;">
-										{link.label}
-									</span>
+									<img src={ogp} alt={link.label} class={ogpImgStyles} />
+									<span class={ogpLabelStyles}>{link.label}</span>
 								</a>
 							);
 						}
@@ -200,23 +260,13 @@ const ogpCardStyles = css({
 								class={cardStyles}
 								target="_blank"
 								rel="noopener noreferrer"
-								style={`--card-color: ${link.color}`}
+								style={linkColorVars(link.color)}
 							>
-								<div
-									style={`width: 48px; height: 48px; border-radius: 12px; background: ${link.color}; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;`}
-								>
+								<div class={cardIconStyles}>
 									<LinkIcon icon={link.icon} color="white" size={28} ogpSrc={null} />
 								</div>
-								<span
-									style={`font-size: 0.95rem; font-weight: bold; color: #4a4a4a; font-family: 'Zen Maru Gothic', sans-serif; text-align: center;`}
-								>
-									{link.label}
-								</span>
-								{link.description && (
-									<span style="font-size: 0.75rem; color: #888; text-align: center;">
-										{link.description}
-									</span>
-								)}
+								<span class={cardLabelStyles}>{link.label}</span>
+								{link.description && <span class={cardDescStyles}>{link.description}</span>}
 							</a>
 						);
 					})
@@ -226,9 +276,3 @@ const ogpCardStyles = css({
 	</div>
 </SectionBackground>
 
-<style>
-	/* ホバー時にカードアクセントカラーで縁取り */
-	a:hover {
-		border-color: var(--card-color, rgba(200, 200, 200, 0.5)) !important;
-	}
-</style>

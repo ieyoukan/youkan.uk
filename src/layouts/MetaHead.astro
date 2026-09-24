@@ -3,7 +3,7 @@ interface Props {
 	title?: string;
 	description?: string;
 	keywords?: string;
-	ogImage?: string;
+	ogImage: string;
 }
 
 const {
@@ -16,9 +16,7 @@ const {
 const origin = Astro.url.origin;
 const canonicalUrl = `${origin}${Astro.url.pathname}`;
 // Layout から絶対 URL で渡される場合はそのまま、相対パスの場合は origin を付加
-const ogImageUrl = ogImage
-	? ogImage.startsWith("http") ? ogImage : `${origin}${ogImage}`
-	: `${origin}/hero/videomock.png`;
+const ogImageUrl = ogImage.startsWith("http") ? ogImage : `${origin}${ogImage}`;
 ---
 
 <meta charset="utf-8" />

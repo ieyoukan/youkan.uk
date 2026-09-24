@@ -5,6 +5,9 @@ import BackLink from "../../components/BackLink.astro";
 import WorkCard from "../../components/works/WorkCard.astro";
 import Layout from "../../layouts/Layout.astro";
 
+// ビルド時に生成（画像最適化のため。index.astro 参照）
+export const prerender = true;
+
 const works = (await getCollection("works")).sort(
 	(a: CollectionEntry<"works">, b: CollectionEntry<"works">) => a.data.order - b.data.order,
 );

@@ -1,17 +1,28 @@
 ---
-import { getEntry } from "astro:content";
+import { getImage } from "astro:assets";
+import { type CollectionEntry, getCollection } from "astro:content";
 import { css, cx } from "@styled/css";
+import videomockSrc from "../../assets/hero/videomock.png";
 import BackLink from "../../components/BackLink.astro";
 import Layout from "../../layouts/Layout.astro";
 import { fetchOgpImage } from "../../lib/ogp";
 
-const { slug } = Astro.params;
-const work = await getEntry("works", slug!);
-if (!work) return Astro.redirect("/works");
+// ビルド時に全作品ぶん生成（画像最適化のため。index.astro 参照）
+export const prerender = true;
 
+export async function getStaticPaths() {
+	const works = await getCollection("works");
+	return works.map((work) => ({ params: { slug: work.id }, props: { work } }));
+}
+
+interface Props {
+	work: CollectionEntry<"works">;
+}
+
+const { work } = Astro.props;
 const { title, description, content, url, githubUrl, image, tags } = work.data;
 const ogpImage = (!image && url) ? await fetchOgpImage(url) : undefined;
-const fallbackImage = "/hero/videomock.png";
+const fallbackImage = (await getImage({ src: videomockSrc, format: "webp", quality: 85 })).src;
 const imgSrc = image ?? ogpImage ?? fallbackImage;
 
 const pageStyles = css({
@@ -128,7 +139,7 @@ const linkGhStyles = css({
 });
 ---
 
-<Layout title={`${title} — ようかんのホームページ`} description={description} ogImage={imgSrc.startsWith("/") ? imgSrc : undefined}>
+<Layout title={`${title} — ようかんのホームページ`} description={description} ogImage={image ?? ogpImage}>
 	<div class={pageStyles}>
 		<BackLink href="/works" label="作品一覧に戻る" />
 

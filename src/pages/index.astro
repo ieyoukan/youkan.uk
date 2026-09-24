@@ -8,6 +8,10 @@ import ServerSection from "../components/sections/ServerSection.astro";
 import WorksSection from "../components/sections/WorksSection.astro";
 import TeaCup from "../components/TeaCup.astro";
 import GlobalLayout from "../layouts/Layout.astro";
+
+// ビルド時に生成する。Cloudflare では実行時に sharp が使えないため、
+// オンデマンド描画だと画像が最適化されず元の PNG がそのまま配信されてしまう。
+export const prerender = true;
 ---
 
 <GlobalLayout>

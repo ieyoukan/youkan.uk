@@ -6,8 +6,9 @@ import type { ImageMetadata } from "astro";
 // このセクションは背景なし（透過）で動画が見える。
 // 上下の大きいフリル波は隣接する LinksSection・WorksSection が担当する。
 
-// about_photos/ の画像を全部 WebP 化し、初期表示はリクエストごとにランダムで 1 枚選ぶ。
-// クリックで切り替えるため、全 URL を data-photos に埋めて JS から参照する。
+// about_photos/ の画像を全部 WebP 化し、全 URL を data-photos に埋めて JS から参照する。
+// ページはビルド時に生成されるため、初期表示のランダム選択もクリック切り替えも JS 側で行う。
+// src は About が画面に近づいた時点で JS が入れる（それまでは灰色の枠だけ）。
 const photoUrls = await Promise.all(
 	Object.values(
 		import.meta.glob<{ default: ImageMetadata }>("../../assets/about_photos/*.{png,jpg,jpeg,webp}", {
@@ -15,7 +16,6 @@ const photoUrls = await Promise.all(
 		}),
 	).map(async (mod) => (await getImage({ src: mod.default, format: "webp", quality: 85, width: 720 })).src),
 );
-const photoUrl = photoUrls[Math.floor(Math.random() * photoUrls.length)];
 
 const sectionStyles = css({
 	minHeight: "100vh",
@@ -59,11 +59,11 @@ const polaroidStyles = css({
 	},
 	// 切り替え演出（data-state は下の script が付け外しする）
 	"&[data-state=falling]": {
-		animation: "polaroidFall 0.55s cubic-bezier(0.55, 0, 0.9, 0.4) forwards",
+		animation: "polaroidFall 0.18s cubic-bezier(0.55, 0, 0.9, 0.4) forwards",
 		pointerEvents: "none",
 	},
 	"&[data-state=dropping]": {
-		animation: "polaroidDrop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
+		animation: "polaroidDrop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both",
 		pointerEvents: "none",
 	},
 });
@@ -108,7 +108,7 @@ const bioStyles = css({
 			aria-label="別の写真を見る"
 			data-photos={JSON.stringify(photoUrls)}
 		>
-			{photoUrl && <img src={photoUrl} alt="ようかんの写真" class={polaroidImage} loading="lazy" />}
+			<img alt="" class={polaroidImage} decoding="async" />
 			<div
 				class={css({
 					textAlign: "center",
@@ -149,51 +149,63 @@ const bioStyles = css({
 
 	if (polaroid && photoImg) {
 		const photos: string[] = JSON.parse(polaroid.dataset.photos ?? "[]");
+		const pickOther = (current: string | null) => {
+			const candidates = photos.filter((url) => url !== current);
+			return candidates[Math.floor(Math.random() * candidates.length)];
+		};
+
+		// 先読み済みの写真（クリック時はここから取り出すので待たせない）
+		const decoded = new Map<string, Promise<void>>();
+		const load = (url: string) => {
+			let p = decoded.get(url);
+			if (!p) {
+				const img = new Image();
+				img.src = url;
+				p = img.decode().catch(() => {});
+				decoded.set(url, p);
+			}
+			return p;
+		};
+
+		// About が 1 画面ぶん手前まで来たら、表示する 1 枚 → 残りの順に読み込む。
+		// About を見ない人には通信が発生しない。
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((entry) => entry.isIntersecting)) return;
+				observer.disconnect();
+
+				photoImg.src = photos[Math.floor(Math.random() * photos.length)];
+				photoImg.alt = "ようかんの写真";
+				for (const url of photos) load(url);
+			},
+			{ rootMargin: "100% 0px" },
+		);
+		observer.observe(polaroid);
 
 		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const animationDone = () =>
+			new Promise<void>((resolve) => polaroid.addEventListener("animationend", () => resolve(), { once: true }));
 		let busy = false;
 
-		polaroid.addEventListener("click", () => {
+		polaroid.addEventListener("click", async () => {
 			if (busy) return;
-
-			// 今表示中のものを除いてランダムに選ぶ
-			const current = photoImg.getAttribute("src");
-			const candidates = photos.filter((url) => url !== current);
-			if (candidates.length === 0) return;
-			const next = candidates[Math.floor(Math.random() * candidates.length)];
+			const next = pickOther(photoImg.getAttribute("src"));
+			if (!next) return;
 
 			if (reduceMotion.matches) {
 				photoImg.src = next;
 				return;
 			}
 
-			// 次の写真を先読みしてから: 落ちる → 差し替え → 上から降りてくる
+			// 落ちるアニメーションと画像の読み込みを同時に進める
 			busy = true;
-			const preload = new Image();
-			const start = () => {
-				polaroid.dataset.state = "falling";
-				polaroid.addEventListener(
-					"animationend",
-					() => {
-						photoImg.src = next;
-						polaroid.dataset.state = "dropping";
-						polaroid.addEventListener(
-							"animationend",
-							() => {
-								delete polaroid.dataset.state;
-								busy = false;
-							},
-							{ once: true },
-						);
-					},
-					{ once: true },
-				);
-			};
-			preload.onload = start;
-			preload.onerror = () => {
-				busy = false;
-			};
-			preload.src = next;
+			polaroid.dataset.state = "falling";
+			await Promise.all([animationDone(), load(next)]);
+			photoImg.src = next;
+			polaroid.dataset.state = "dropping";
+			await animationDone();
+			delete polaroid.dataset.state;
+			busy = false;
 		});
 	}
 </script>

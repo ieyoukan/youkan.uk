@@ -9,6 +9,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
+	// prerender ページの Astro.url.origin（canonical / OGP の絶対 URL）に使われる
+	site: "https://youkan.uk",
 	output: "server",
 	adapter: cloudflare(),
 	session: {
