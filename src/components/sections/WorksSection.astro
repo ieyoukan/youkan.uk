@@ -86,24 +86,22 @@ const footerStyles = css({
 			<p class={subtitleStyles}>つくったもの</p>
 		</div>
 
-		<div class={scrollTrackStyles}>
-			{previewWorks.map((work: CollectionEntry<"works">, i: number) => (
-				<div
-					class={cardWrapStyles}
-					data-animate
-					data-dir={i % 2 === 0 ? "left" : "right"}
-					style={`--stagger: ${i * 0.08}s`}
-				>
-					<WorkCard
-						slug={work.id}
-						title={work.data.title}
-						description={work.data.description}
-						image={work.data.image}
-						url={work.data.url}
-						tags={work.data.tags}
-					/>
-				</div>
-			))}
+		<!-- 本棚: 作品の列をまとめて左から押し込むように出す -->
+		<div data-animate data-dir="shelf">
+			<div class={scrollTrackStyles}>
+				{previewWorks.map((work: CollectionEntry<"works">) => (
+					<div class={cardWrapStyles}>
+						<WorkCard
+							slug={work.id}
+							title={work.data.title}
+							description={work.data.description}
+							image={work.data.image}
+							url={work.data.url}
+							tags={work.data.tags}
+						/>
+					</div>
+				))}
+			</div>
 		</div>
 
 		<div class={footerStyles}>
