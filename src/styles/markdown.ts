@@ -1,4 +1,3 @@
-import { BUTTON_ICON, TEXT_PRIMARY } from "@consts/theme";
 import { css } from "@styled/css";
 
 /**
@@ -11,7 +10,7 @@ export const markdownStyles = css({
 	"& h2": {
 		fontSize: "1.5rem",
 		fontWeight: "bold",
-		color: TEXT_PRIMARY,
+		color: "text.primary",
 		marginTop: "2.5rem",
 		marginBottom: "1rem",
 		paddingBottom: "0.5rem",
@@ -20,7 +19,7 @@ export const markdownStyles = css({
 	"& h3": {
 		fontSize: "1.25rem",
 		fontWeight: "bold",
-		color: TEXT_PRIMARY,
+		color: "text.primary",
 		marginTop: "2rem",
 		marginBottom: "0.8rem",
 	},
@@ -36,7 +35,7 @@ export const markdownStyles = css({
 	"& ul": { listStyleType: "disc" },
 	"& ol": { listStyleType: "decimal" },
 	"& li": { marginBottom: "0.5rem" },
-	"& li::marker": { color: BUTTON_ICON },
+	"& li::marker": { color: "button.icon" },
 	"& strong": { fontWeight: "bold" },
 	"& code": {
 		fontSize: "0.9em",

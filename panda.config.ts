@@ -1,5 +1,9 @@
 import { defineConfig } from "@pandacss/dev";
 import {
+	BUTTON_BG,
+	BUTTON_ICON,
+	BUTTON_TEXT,
+	FOOTER_BG,
 	SECTION_DARK_BG,
 	SECTION_LIGHT_BG,
 	SECTION_LIGHT_BOT,
@@ -36,7 +40,12 @@ export default defineConfig({
 
 	theme: {
 		extend: {
+			// css() の中では theme.ts の定数を import して使わず、ここのトークンを名前で参照する
+			// （import した値は Panda がビルド時に読み取れず、CSS が生成されないため）
 			tokens: {
+				gradients: {
+					button: { value: BUTTON_BG },
+				},
 				colors: {
 					section: {
 						lightBg:  { value: SECTION_LIGHT_BG },
@@ -46,6 +55,13 @@ export default defineConfig({
 					},
 					wave: {
 						dot: { value: WAVE_DOT },
+					},
+					footer: {
+						bg: { value: FOOTER_BG },
+					},
+					button: {
+						text: { value: BUTTON_TEXT },
+						icon: { value: BUTTON_ICON },
 					},
 					text: {
 						primary:   { value: TEXT_PRIMARY },
@@ -65,6 +81,11 @@ export default defineConfig({
 					"55%":  { transform: "translateY(12px) rotate(-1deg)", opacity: "1" },
 					"78%":  { transform: "translateY(-6px) rotate(-4deg)" },
 					"100%": { transform: "rotate(-3deg)", opacity: "1" },
+				},
+				// フッターの波・雲: タイル 1 枚分（--wave-w）横に流すとつなぎ目なくループする
+				footerWave: {
+					from: { transform: "translateX(0)" },
+					to:   { transform: "translateX(calc(-1 * var(--wave-w)))" },
 				},
 				// 戻るボタンの矢印がぴょこぴょこ動く
 				backArrowHop: {

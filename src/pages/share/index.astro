@@ -1,6 +1,5 @@
 ---
 import { sharedFiles } from "@consts/files";
-import { BUTTON_ICON, TEXT_SECONDARY } from "@consts/theme";
 import { css, cx } from "@styled/css";
 import BackLink from "../../components/BackLink.astro";
 import { shareCard, shareIconBubble, shareMain, shareMuted, shareTitle } from "../../components/share/shareStyles";
@@ -31,17 +30,17 @@ const itemStyles = css({
 		transform: "translateY(-2px)",
 		borderColor: "rgba(255,182,213,0.9)",
 		boxShadow: "0 6px 20px rgba(200,150,200,0.25)",
-		"& [data-arrow]": { transform: "translateX(4px)", color: BUTTON_ICON },
+		"& [data-arrow]": { transform: "translateX(4px)", color: "button.icon" },
 	},
 });
 
 const fileNameStyles = css({ margin: "0 0 0.3rem", fontSize: "1.1rem", fontWeight: "bold" });
-const fileDescStyles = css({ margin: 0, fontSize: "0.95rem", lineHeight: 1.5, color: TEXT_SECONDARY });
+const fileDescStyles = css({ margin: 0, fontSize: "0.95rem", lineHeight: 1.5, color: "text.secondary" });
 const fileDateStyles = css({ display: "block", marginTop: "0.4rem", fontSize: "0.8rem", color: "#999" });
 
 const arrowStyles = css({
 	flexShrink: 0,
-	color: TEXT_SECONDARY,
+	color: "text.secondary",
 	transition: "transform 0.2s ease, color 0.2s ease",
 });
 ---

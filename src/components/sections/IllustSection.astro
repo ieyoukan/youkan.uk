@@ -1,6 +1,5 @@
 ---
 import { getImage } from "astro:assets";
-import { TEXT_PRIMARY } from "@consts/theme";
 import { css } from "@styled/css";
 import { fetchPixivPickup, PIXIV_PROFILE_URL } from "../../lib/pixiv";
 import SectionBackground from "../SectionBackground.astro";
@@ -32,7 +31,7 @@ const innerStyles = css({
 const titleStyles = css({
 	fontSize: "2.5rem",
 	fontWeight: "bold",
-	color: TEXT_PRIMARY,
+	color: "text.primary",
 	marginBottom: "0.5rem",
 });
 
@@ -81,7 +80,7 @@ const captionStyles = css({
 	fontSize: "0.95rem",
 	fontWeight: "bold",
 	textAlign: "center",
-	color: TEXT_PRIMARY,
+	color: "text.primary",
 });
 
 const moreStyles = css({

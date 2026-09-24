@@ -1,14 +1,47 @@
 ---
-import { SECTION_DARK_BG } from "@consts/theme";
-import { css } from "@styled/css";
+import { FOOTER_BG } from "@consts/theme";
+import { css, cx } from "@styled/css";
+import { svgUrl } from "../../lib/frill";
+import { organicWaveSvg } from "../../lib/wave";
+
+// ===== 上の縁: おだやかな波 =====
+// 高さは低く、幅は広く。タイル 1 枚分を transform で流す（描き直しが起きないので滑らか）
+const WAVE = { width: 1440, height: 56, base: 30 };
+
+const wave = organicWaveSvg({ ...WAVE, fill: FOOTER_BG, seed: 12, amplitude: 20 });
+
+const edgeStyles = css({
+	position: "absolute",
+	left: 0,
+	bottom: "calc(100% - 2px)",
+	width: "100%",
+	height: "56px",
+	overflow: "hidden",
+	pointerEvents: "none",
+});
+
+// 横に 1 タイル分長くして、その分だけ流す
+const layerBase = css({
+	position: "absolute",
+	left: 0,
+	bottom: 0,
+	width: "calc(100% + var(--wave-w))",
+	backgroundRepeat: "repeat-x",
+	backgroundPosition: "left bottom",
+	willChange: "transform",
+	animationName: "footerWave",
+	animationTimingFunction: "linear",
+	animationIterationCount: "infinite",
+	_motionReduce: { animation: "none" },
+});
+const waveLayer = cx(layerBase, css({ height: "56px", animationDuration: "80s" }));
 
 const footerStyles = css({
-	padding: "3rem 2rem",
-	textAlign: "center",
-	// サーバーセクションの色から始めて境目を出さない
-	background: SECTION_DARK_BG,
-	color: "white",
 	position: "relative",
+	padding: "2.5rem 2rem 3rem",
+	textAlign: "center",
+	background: "footer.bg",
+	color: "white",
 });
 
 const navStyles = css({
@@ -22,7 +55,6 @@ const navStyles = css({
 const navLinkStyles = css({
 	color: "rgba(255,255,255,0.7)",
 	textDecoration: "none",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
 	fontSize: "0.95rem",
 	transition: "color 0.2s ease",
 	_hover: { color: "rgba(255,200,220,1)" },
@@ -31,17 +63,25 @@ const navLinkStyles = css({
 const copyrightStyles = css({
 	fontSize: "0.85rem",
 	color: "rgba(255,255,255,0.4)",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
 });
+
+const year = new Date().getFullYear();
 ---
 
 <footer class={footerStyles}>
+	<div class={edgeStyles} aria-hidden="true">
+		<div
+			class={waveLayer}
+			style={`--wave-w: ${WAVE.width}px; background-image: ${svgUrl(wave)}; background-size: ${WAVE.width}px ${WAVE.height}px;`}
+		>
+		</div>
+	</div>
 	<nav class={navStyles}>
-		<a href="/#links"  class={navLinkStyles}>リンク</a>
-		<a href="/#works"  class={navLinkStyles}>作品</a>
+		<a href="/#links" class={navLinkStyles}>リンク</a>
+		<a href="/#works" class={navLinkStyles}>作品</a>
 		<a href="/#illust" class={navLinkStyles}>絵</a>
 		<a href="/#server" class={navLinkStyles}>サーバー</a>
-		<a href="/works"   class={navLinkStyles}>作品一覧</a>
+		<a href="/works" class={navLinkStyles}>作品一覧</a>
 	</nav>
-	<p class={copyrightStyles}>&copy; 2026 Youkan</p>
+	<p class={copyrightStyles}>&copy; {year} Youkan</p>
 </footer>

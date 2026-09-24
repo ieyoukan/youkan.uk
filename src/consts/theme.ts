@@ -77,3 +77,7 @@ export const RIBBON_BLUE = "#a9dcf6";
 export const RIBBON_BLUE_SHADE = "#8ccbef";
 /** リボンのふちどり */
 export const RIBBON_BLUE_DEEP = "#5fa9d6";
+
+// ===== フッター =====
+/** フッターの色（サーバーセクションより少し明るい紫紺。波の形が見えるように） */
+export const FOOTER_BG = "#262040";

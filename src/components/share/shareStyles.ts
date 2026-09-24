@@ -1,4 +1,3 @@
-import { BUTTON_BG, BUTTON_ICON, BUTTON_TEXT, TEXT_PRIMARY, TEXT_SECONDARY } from "@consts/theme";
 import { css, cx } from "@styled/css";
 
 /** ファイル共有ページ共通のスタイル */
@@ -23,7 +22,7 @@ export const shareCard = css({
 	borderRadius: "28px",
 	border: "2px dashed rgba(255,182,213,0.8)",
 	boxShadow: "0 8px 40px rgba(180,120,200,0.18)",
-	color: TEXT_PRIMARY,
+	color: "text.primary",
 });
 
 export const shareTitle = css({
@@ -31,11 +30,11 @@ export const shareTitle = css({
 	fontSize: { base: "1.8rem", md: "2.3rem" },
 	fontWeight: "bold",
 	textAlign: "center",
-	color: TEXT_PRIMARY,
+	color: "text.primary",
 });
 
 export const shareMuted = css({
-	color: TEXT_SECONDARY,
+	color: "text.secondary",
 	textAlign: "center",
 });
 
@@ -44,7 +43,7 @@ export const shareIconBubble = css({
 	placeItems: "center",
 	flexShrink: 0,
 	borderRadius: "50%",
-	background: BUTTON_BG,
+	background: "token(gradients.button)",
 	color: "white",
 });
 
@@ -62,15 +61,15 @@ const buttonBase = css({
 	transition: "transform 0.2s ease, box-shadow 0.2s ease",
 	_hover: { transform: "translateY(-2px)" },
 	_active: { transform: "translateY(0) scale(0.97)" },
-	_focusVisible: { outline: `3px solid ${BUTTON_ICON}`, outlineOffset: "3px" },
+	_focusVisible: { outline: "3px solid token(colors.button.icon)", outlineOffset: "3px" },
 });
 
 export const shareButtonPrimary = cx(
 	buttonBase,
 	css({
 		border: "2px solid white",
-		background: BUTTON_BG,
-		color: BUTTON_TEXT,
+		background: "token(gradients.button)",
+		color: "button.text",
 		boxShadow: "0 4px 16px rgba(200,150,200,0.3)",
 		_hover: { boxShadow: "0 8px 24px rgba(200,150,200,0.45)" },
 	}),
@@ -81,7 +80,7 @@ export const shareButtonSecondary = cx(
 	css({
 		border: "2px solid rgba(255,182,213,0.8)",
 		background: "white",
-		color: BUTTON_TEXT,
+		color: "button.text",
 		_hover: { boxShadow: "0 6px 18px rgba(200,150,200,0.3)" },
 	}),
 );

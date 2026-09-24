@@ -1,6 +1,5 @@
 ---
 import { getFileById } from "@consts/files";
-import { TEXT_SECONDARY } from "@consts/theme";
 import { css, cx } from "@styled/css";
 import BackLink from "../../components/BackLink.astro";
 import {
@@ -45,7 +44,7 @@ const bigIconStyles = cx(shareIconBubble, css({ width: "5.5rem", height: "5.5rem
 const fileIdStyles = css({
 	fontFamily: "monospace",
 	fontSize: "0.85rem",
-	color: TEXT_SECONDARY,
+	color: "text.secondary",
 	backgroundColor: "rgba(180,220,255,0.3)",
 	padding: "0.5rem 1rem",
 	borderRadius: "999px",

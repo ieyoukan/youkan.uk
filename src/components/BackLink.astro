@@ -1,5 +1,4 @@
 ---
-import { BUTTON_BG, BUTTON_ICON, BUTTON_TEXT } from "@consts/theme";
 import { css } from "@styled/css";
 
 interface Props {
@@ -18,8 +17,8 @@ const linkStyles = css({
 	marginBottom: "2.5rem",
 	borderRadius: "999px",
 	border: "2px solid white",
-	background: BUTTON_BG,
-	color: BUTTON_TEXT,
+	background: "token(gradients.button)",
+	color: "button.text",
 	fontFamily: '"Zen Maru Gothic", sans-serif',
 	fontSize: "1rem",
 	fontWeight: "bold",
@@ -46,7 +45,7 @@ const linkStyles = css({
 		transform: "translateY(0) scale(0.97)",
 	},
 	_focusVisible: {
-		outline: `3px solid ${BUTTON_ICON}`,
+		outline: "3px solid token(colors.button.icon)",
 		outlineOffset: "3px",
 	},
 });
@@ -58,7 +57,7 @@ const arrowStyles = css({
 	height: "2.2rem",
 	borderRadius: "50%",
 	backgroundColor: "white",
-	color: BUTTON_ICON,
+	color: "button.icon",
 	fontSize: "1.1rem",
 	boxShadow: "0 2px 6px rgba(200,150,200,0.25)",
 });
