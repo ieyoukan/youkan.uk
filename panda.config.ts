@@ -44,6 +44,24 @@ export default defineConfig({
 					"0%":   { transform: "translate(-50%, -50%) scale(0.2)", opacity: "0.6" },
 					"100%": { transform: "translate(-50%, -50%) scale(3.5)", opacity: "0" },
 				},
+				// About のポラロイド: クリックで下へ落ちる
+				polaroidFall: {
+					"0%":   { transform: "rotate(-3deg)", opacity: "1" },
+					"20%":  { transform: "translateY(-14px) rotate(-7deg)", opacity: "1" },
+					"100%": { transform: "translateY(70vh) rotate(20deg)", opacity: "0" },
+				},
+				// About のポラロイド: 上から新しいカードがふわっと降りてくる
+				polaroidDrop: {
+					"0%":   { transform: "translateY(-70vh) rotate(-16deg)", opacity: "0" },
+					"55%":  { transform: "translateY(12px) rotate(-1deg)", opacity: "1" },
+					"78%":  { transform: "translateY(-6px) rotate(-4deg)" },
+					"100%": { transform: "rotate(-3deg)", opacity: "1" },
+				},
+				// 戻るボタンの矢印がぴょこぴょこ動く
+				backArrowHop: {
+					"0%, 100%": { transform: "translateX(0)" },
+					"50%":      { transform: "translateX(-4px)" },
+				},
 			},
 		},
 	},

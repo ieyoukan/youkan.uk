@@ -1,0 +1,12 @@
+# Windows (core.autocrlf=true) でも作業ツリーを常に LF に揃える
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.mp4 binary
+*.webm binary

@@ -1,8 +1,21 @@
 ---
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
 import { css } from "@styled/css";
 
 // このセクションは背景なし（透過）で動画が見える。
 // 上下の大きいフリル波は隣接する LinksSection・WorksSection が担当する。
+
+// about_photos/ の画像を全部 WebP 化し、初期表示はリクエストごとにランダムで 1 枚選ぶ。
+// クリックで切り替えるため、全 URL を data-photos に埋めて JS から参照する。
+const photoUrls = await Promise.all(
+	Object.values(
+		import.meta.glob<{ default: ImageMetadata }>("../../assets/about_photos/*.{png,jpg,jpeg,webp}", {
+			eager: true,
+		}),
+	).map(async (mod) => (await getImage({ src: mod.default, format: "webp", quality: 85, width: 720 })).src),
+);
+const photoUrl = photoUrls[Math.floor(Math.random() * photoUrls.length)];
 
 const sectionStyles = css({
 	minHeight: "100vh",
@@ -27,8 +40,14 @@ const containerGrid = css({
 	},
 });
 
-// ポラロイド風写真カード
+// ポラロイド風写真カード（クリックで写真が切り替わるので button）
 const polaroidStyles = css({
+	display: "block",
+	width: "100%",
+	border: "none",
+	font: "inherit",
+	color: "inherit",
+	cursor: "pointer",
 	backgroundColor: "white",
 	padding: "1rem 1rem 3rem 1rem",
 	boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
@@ -38,17 +57,24 @@ const polaroidStyles = css({
 		transform: "rotate(0deg) scale(1.02)",
 		boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
 	},
+	// 切り替え演出（data-state は下の script が付け外しする）
+	"&[data-state=falling]": {
+		animation: "polaroidFall 0.55s cubic-bezier(0.55, 0, 0.9, 0.4) forwards",
+		pointerEvents: "none",
+	},
+	"&[data-state=dropping]": {
+		animation: "polaroidDrop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both",
+		pointerEvents: "none",
+	},
 });
 
 const polaroidImage = css({
+	display: "block",
 	width: "100%",
+	height: "auto",
 	aspectRatio: "3/4",
+	objectFit: "cover",
 	backgroundColor: "#ddd",
-	display: "flex",
-	alignItems: "center",
-	justifyContent: "center",
-	color: "#888",
-	fontSize: "1.2rem",
 	marginBottom: "1rem",
 });
 
@@ -75,8 +101,14 @@ const bioStyles = css({
 <section id="about" class={sectionStyles} data-animate>
 	<div class={containerGrid}>
 		<!-- 左: ポラロイド写真 -->
-		<div class={polaroidStyles}>
-			<div class={polaroidImage}>Image Placeholder</div>
+		<button
+			type="button"
+			id="about-polaroid"
+			class={polaroidStyles}
+			aria-label="別の写真を見る"
+			data-photos={JSON.stringify(photoUrls)}
+		>
+			{photoUrl && <img src={photoUrl} alt="ようかんの写真" class={polaroidImage} loading="lazy" />}
 			<div
 				class={css({
 					textAlign: "center",
@@ -86,7 +118,7 @@ const bioStyles = css({
 			>
 				#家猫ようかん #ぷぷりえ
 			</div>
-		</div>
+		</button>
 
 		<!-- 右: 自己紹介 -->
 		<div class={infoStyles}>
@@ -103,9 +135,65 @@ const bioStyles = css({
 
 			<div class={bioStyles}>
 				<p>ようかんです。</p>
-				<p>にゃんにゃん</p>
 				<p>なんでもやさんです！</p>
+				<p>声の話も技術の話(web,インフラ,vrトラッカー)も服も</p>
+				<p>おうちで寝るのが好き</p>
 			</div>
 		</div>
 	</div>
 </section>
+
+<script>
+	const polaroid = document.getElementById("about-polaroid");
+	const photoImg = polaroid?.querySelector("img");
+
+	if (polaroid && photoImg) {
+		const photos: string[] = JSON.parse(polaroid.dataset.photos ?? "[]");
+
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		let busy = false;
+
+		polaroid.addEventListener("click", () => {
+			if (busy) return;
+
+			// 今表示中のものを除いてランダムに選ぶ
+			const current = photoImg.getAttribute("src");
+			const candidates = photos.filter((url) => url !== current);
+			if (candidates.length === 0) return;
+			const next = candidates[Math.floor(Math.random() * candidates.length)];
+
+			if (reduceMotion.matches) {
+				photoImg.src = next;
+				return;
+			}
+
+			// 次の写真を先読みしてから: 落ちる → 差し替え → 上から降りてくる
+			busy = true;
+			const preload = new Image();
+			const start = () => {
+				polaroid.dataset.state = "falling";
+				polaroid.addEventListener(
+					"animationend",
+					() => {
+						photoImg.src = next;
+						polaroid.dataset.state = "dropping";
+						polaroid.addEventListener(
+							"animationend",
+							() => {
+								delete polaroid.dataset.state;
+								busy = false;
+							},
+							{ once: true },
+						);
+					},
+					{ once: true },
+				);
+			};
+			preload.onload = start;
+			preload.onerror = () => {
+				busy = false;
+			};
+			preload.src = next;
+		});
+	}
+</script>
