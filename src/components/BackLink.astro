@@ -1,0 +1,70 @@
+---
+import { BUTTON_BG, BUTTON_ICON, BUTTON_TEXT } from "@consts/theme";
+import { css } from "@styled/css";
+
+interface Props {
+	href: string;
+	label: string;
+}
+
+const { href, label } = Astro.props;
+
+const linkStyles = css({
+	position: "relative",
+	display: "inline-flex",
+	alignItems: "center",
+	gap: "0.6rem",
+	padding: "0.5rem 1.4rem 0.5rem 0.5rem",
+	marginBottom: "2.5rem",
+	borderRadius: "999px",
+	border: "2px solid white",
+	background: BUTTON_BG,
+	color: BUTTON_TEXT,
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontSize: "1rem",
+	fontWeight: "bold",
+	textDecoration: "none",
+	boxShadow: "0 4px 16px rgba(200,150,200,0.3)",
+	transition: "transform 0.25s ease, box-shadow 0.25s ease",
+	// 内側の点線でフリルっぽく
+	_before: {
+		content: '""',
+		position: "absolute",
+		inset: "3px",
+		borderRadius: "inherit",
+		border: "1.5px dashed rgba(255,255,255,0.9)",
+		pointerEvents: "none",
+	},
+	_hover: {
+		transform: "translateY(-3px) scale(1.04)",
+		boxShadow: "0 8px 24px rgba(200,150,200,0.45)",
+		"& [data-arrow]": {
+			animation: "backArrowHop 0.6s ease-in-out infinite",
+		},
+	},
+	_active: {
+		transform: "translateY(0) scale(0.97)",
+	},
+	_focusVisible: {
+		outline: `3px solid ${BUTTON_ICON}`,
+		outlineOffset: "3px",
+	},
+});
+
+const arrowStyles = css({
+	display: "grid",
+	placeItems: "center",
+	width: "2.2rem",
+	height: "2.2rem",
+	borderRadius: "50%",
+	backgroundColor: "white",
+	color: BUTTON_ICON,
+	fontSize: "1.1rem",
+	boxShadow: "0 2px 6px rgba(200,150,200,0.25)",
+});
+---
+
+<a href={href} class={linkStyles}>
+	<span class={arrowStyles} data-arrow aria-hidden="true">←</span>
+	<span>{label}</span>
+</a>

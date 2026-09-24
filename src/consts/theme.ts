@@ -27,3 +27,11 @@ export const WAVE_DOT = "rgba(125,211,252,0.85)";
 // ===== テキスト =====
 export const TEXT_PRIMARY   = "#4a4a4a";
 export const TEXT_SECONDARY = "#666";
+
+// ===== ボタン =====
+/** かわいいボタンの背景（ピンク → 水色） */
+export const BUTTON_BG = "linear-gradient(135deg, rgba(255,182,213,0.95), rgba(180,220,255,0.95))";
+/** ボタンの文字色 */
+export const BUTTON_TEXT = "#5a3a5a";
+/** ボタン内のアイコン色 */
+export const BUTTON_ICON = "#e07aa8";

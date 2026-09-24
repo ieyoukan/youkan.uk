@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
 import { css } from "@styled/css";
+import BackLink from "../../components/BackLink.astro";
 import WorkCard from "../../components/works/WorkCard.astro";
 import Layout from "../../layouts/Layout.astro";
 
@@ -28,18 +29,6 @@ const titleStyles = css({
 	marginBottom: "0.5rem",
 });
 
-const backStyles = css({
-	display: "inline-flex",
-	alignItems: "center",
-	gap: "0.3rem",
-	color: "#a07090",
-	textDecoration: "none",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
-	fontSize: "0.95rem",
-	marginBottom: "2rem",
-	_hover: { textDecoration: "underline" },
-});
-
 const gridStyles = css({
 	display: "grid",
 	gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
@@ -50,7 +39,7 @@ const gridStyles = css({
 
 <Layout title="作品一覧 — ようかんのホームページ">
 	<div class={pageStyles}>
-		<a href="/" class={backStyles}>← ホームに戻る</a>
+		<BackLink href="/" label="ホームに戻る" />
 		<div class={headerStyles}>
 			<h1 class={titleStyles}>作品一覧</h1>
 		</div>

@@ -1,6 +1,7 @@
 ---
 import { getEntry } from "astro:content";
 import { css, cx } from "@styled/css";
+import BackLink from "../../components/BackLink.astro";
 import Layout from "../../layouts/Layout.astro";
 import { fetchOgpImage } from "../../lib/ogp";
 
@@ -18,18 +19,6 @@ const pageStyles = css({
 	maxWidth: "900px",
 	margin: "0 auto",
 	padding: "6rem 2rem 8rem",
-});
-
-const backStyles = css({
-	display: "inline-flex",
-	alignItems: "center",
-	gap: "0.3rem",
-	color: "#a07090",
-	textDecoration: "none",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
-	fontSize: "0.95rem",
-	marginBottom: "2.5rem",
-	_hover: { textDecoration: "underline" },
 });
 
 const heroStyles = css({
@@ -141,7 +130,7 @@ const linkGhStyles = css({
 
 <Layout title={`${title} — ようかんのホームページ`} description={description} ogImage={imgSrc.startsWith("/") ? imgSrc : undefined}>
 	<div class={pageStyles}>
-		<a href="/works" class={backStyles}>← 作品一覧に戻る</a>
+		<BackLink href="/works" label="作品一覧に戻る" />
 
 		<div class={heroStyles}>
 			<img src={imgSrc} alt={title} class={imgStyles} />
