@@ -3,8 +3,8 @@ import { type CollectionEntry, getCollection, render } from "astro:content";
 import { css, cx } from "@styled/css";
 import BackLink from "../../components/BackLink.astro";
 import Layout from "../../layouts/Layout.astro";
-import { markdownStyles } from "../../styles/markdown";
 import { getWorkImage } from "../../lib/workImage";
+import { markdownStyles } from "../../styles/markdown";
 
 // ビルド時に全作品ぶん生成（画像最適化のため。index.astro 参照）
 export const prerender = true;
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { work } = Astro.props;
-const { title, description, url, githubUrl, image, tags } = work.data;
+const { title, description, url, github, image, tags } = work.data;
 // 本文（src/content/works/*.mdx の frontmatter 以降）
 const { Content } = await render(work);
 const hasBody = Boolean(work.body?.trim());
@@ -174,11 +174,11 @@ const linkGhStyles = css({
 						</span>
 					</a>
 				)}
-				{githubUrl && (
-					<a href={githubUrl} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkGhStyles)}>
+				{github && (
+					<a href={github} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkGhStyles)}>
 						<span>
 							GitHub でコードを見る
-							<span class={linkUrlStyles}>{githubUrl}</span>
+							<span class={linkUrlStyles}>{github}</span>
 						</span>
 					</a>
 				)}

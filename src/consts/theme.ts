@@ -35,3 +35,33 @@ export const BUTTON_BG = "linear-gradient(135deg, rgba(255,182,213,0.95), rgba(1
 export const BUTTON_TEXT = "#5a3a5a";
 /** ボタン内のアイコン色 */
 export const BUTTON_ICON = "#e07aa8";
+
+// ===== ようかん =====
+/** チョコミントのチップ（こげ茶の欠片を大小・縦横ばらばらに散らしたタイル。面ごとに位置をずらして使う） */
+const CHOCO_CHIPS = [
+	"radial-gradient(ellipse 4px 2px at 10% 14%, #3b2721 85%, transparent 100%)",
+	"radial-gradient(ellipse 1.5px 3px at 41% 6%, #4a342c 85%, transparent 100%)",
+	"radial-gradient(ellipse 3px 2.5px at 73% 24%, #3b2721 85%, transparent 100%)",
+	"radial-gradient(ellipse 2px 1.5px at 24% 47%, #52392f 85%, transparent 100%)",
+	"radial-gradient(ellipse 5px 2.5px at 58% 58%, #3b2721 85%, transparent 100%)",
+	"radial-gradient(ellipse 1.5px 1.5px at 88% 71%, #4a342c 85%, transparent 100%)",
+	"radial-gradient(ellipse 2.5px 3.5px at 16% 86%, #3b2721 85%, transparent 100%)",
+	"radial-gradient(ellipse 2px 1.5px at 67% 93%, #52392f 85%, transparent 100%)",
+].join(", ");
+
+/**
+ * ようかんの味ごとの色（淡く・少し暗く）。1 本のようかんは 1 色で、
+ * 面ごとの明暗（top: 上面 / face: 断面 / side: 下側・影）だけで立体感と透明感を出す。
+ * texture は面に重ねる模様（なければ none）。
+ */
+export const YOKAN_FLAVORS = {
+	/** 小豆（ピンク寄り） */
+	azuki: { top: "#a8606c", face: "#8a4552", side: "#6c3440", texture: "none", textureSize: "auto" },
+	/** チョコミント（水色寄り）＋チョコチップ */
+	mint: { top: "#7fb3b3", face: "#62999a", side: "#467a7c", texture: CHOCO_CHIPS, textureSize: "67px 59px" },
+	/** 抹茶 */
+	matcha: { top: "#8b9a52", face: "#6f7e3c", side: "#56632d", texture: "none", textureSize: "auto" },
+} as const;
+
+export type YokanFlavor = keyof typeof YOKAN_FLAVORS;
+export const YOKAN_FLAVOR_NAMES = Object.keys(YOKAN_FLAVORS) as YokanFlavor[];

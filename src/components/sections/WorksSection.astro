@@ -1,12 +1,14 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
-import { css } from "@styled/css";
+import { css, cx } from "@styled/css";
 import SectionBackground from "../SectionBackground.astro";
 import WorkCard from "../works/WorkCard.astro";
+import YokanSlicerParts from "../works/YokanSlicerParts.astro";
 
 const allWorks = (await getCollection("works")).sort(
 	(a: CollectionEntry<"works">, b: CollectionEntry<"works">) => a.data.order - b.data.order,
 );
+// 基本は 3 つ。6 つ並べられる広い画面では、右の画面端からも別のようかんを出して 3 つ足す
 const previewWorks = allWorks.slice(0, 6);
 
 const innerStyles = css({
@@ -34,21 +36,32 @@ const subtitleStyles = css({
 	fontFamily: '"Zen Maru Gothic", sans-serif',
 });
 
-// 横スクロールトラック
+// 横スクロールトラック（切り分けの糸を絶対配置するため relative）
 const scrollTrackStyles = css({
+	position: "relative",
 	display: "flex",
+	alignItems: "flex-start",
 	overflowX: "auto",
 	gap: "2rem",
 	padding: "0.5rem 2.5rem 2rem",
+	scrollPaddingInline: "2.5rem",
 	scrollSnapType: "x mandatory",
 	scrollbarWidth: "none",
 	"&::-webkit-scrollbar": { display: "none" },
+	// 6 つ並ぶ広さ（カード 340px × 6 ＋ 間 ＋ 余白）では中央に寄せる
+	"@media (min-width: 2280px)": { justifyContent: "center" },
 });
 
 // 各カードラッパー
 const cardWrapStyles = css({
-	flex: "0 0 340px",
+	flex: { base: "0 0 260px", md: "0 0 340px" },
 	scrollSnapAlign: "start",
+});
+
+// 4 つ目以降は 6 つ並ぶ広さのときだけ出す
+const extraCardStyles = css({
+	display: "none",
+	"@media (min-width: 2280px)": { display: "block" },
 });
 
 const moreButtonStyles = css({
@@ -86,23 +99,22 @@ const footerStyles = css({
 			<p class={subtitleStyles}>つくったもの</p>
 		</div>
 
-		<!-- 本棚: 作品の列をまとめて左から押し込むように出す -->
-		<div data-animate data-dir="shelf">
-			<div class={scrollTrackStyles}>
-				{previewWorks.map((work: CollectionEntry<"works">) => (
-					<div class={cardWrapStyles}>
-						<WorkCard
-							slug={work.id}
-							title={work.data.title}
-							description={work.data.description}
-							image={work.data.image}
-							url={work.data.url}
-							tags={work.data.tags}
-						/>
-					</div>
-				))}
-			</div>
+		<!-- 本棚: 画面の端から続くようかんを端で 1 切れずつ切って並べる（src/lib/yokanCut.ts） -->
+		<div class={scrollTrackStyles} data-yokan-track data-yokan-wait data-flavor="azuki">
+			{previewWorks.map((work: CollectionEntry<"works">, i: number) => (
+				<div class={i < 3 ? cardWrapStyles : cx(cardWrapStyles, extraCardStyles)} data-yokan-card>
+					<WorkCard
+						slug={work.id}
+						title={work.data.title}
+						description={work.data.description}
+						image={work.data.image}
+						url={work.data.url}
+						tags={work.data.tags}
+					/>
+				</div>
+			))}
 		</div>
+		<YokanSlicerParts />
 
 		<div class={footerStyles}>
 			<a href="/works" class={moreButtonStyles}>
@@ -111,3 +123,52 @@ const footerStyles = css({
 		</div>
 	</div>
 </SectionBackground>
+
+<script>
+	import type { YokanFlavor } from "@consts/theme";
+	import { randomFlavor } from "../../lib/yokan";
+	import { playYokanSlicer } from "../../lib/yokanCut";
+
+	const track = document.querySelector<HTMLElement>("[data-yokan-track]");
+	const loafTemplate = document.querySelector<HTMLElement>("[data-yokan-loaf-template]");
+	const threadTemplate = document.querySelector<HTMLElement>("[data-yokan-thread]");
+
+	if (track && loafTemplate && threadTemplate) {
+		// 表示されているカード（6 つ並ぶ広さなら 6、そうでなければ 3）
+		const cards = [...track.querySelectorAll<HTMLElement>("[data-yokan-card]")].filter((c) => c.offsetParent !== null);
+		// 6 つなら左右 2 本のようかんに分ける（左から 3 つ・右から 3 つ、別の味）
+		const groups = cards.length >= 6 ? [cards.slice(0, 3), cards.slice(3)] : [cards];
+		let flavor: YokanFlavor | undefined;
+		const flavors = groups.map(() => {
+			flavor = randomFlavor(flavor);
+			return flavor;
+		});
+		groups.forEach((group, i) => {
+			for (const card of group) card.dataset.flavor = flavors[i];
+		});
+
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			delete track.dataset.yokanWait;
+		} else {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					if (!entries.some((e) => e.isIntersecting)) return;
+					observer.disconnect();
+					groups.forEach((group, i) => {
+						playYokanSlicer({
+							loafTemplate,
+							host: track,
+							cards: group,
+							threadTemplate,
+							dir: i === 0 ? 1 : -1,
+							flavor: flavors[i],
+							waiting: [track],
+						});
+					});
+				},
+				{ threshold: 0.25 },
+			);
+			observer.observe(track);
+		}
+	}
+</script>

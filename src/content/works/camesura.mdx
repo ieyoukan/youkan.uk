@@ -1,0 +1,19 @@
+---
+title: "かめすら（CameSura）"
+description: "スマホのカメラで姿勢を確認して、SlimeVR の Yaw Reset を正しい姿勢で行うための補助アプリ。"
+github: "https://github.com/camesura/camesura"
+tags: ["SlimeVR", "Flutter", "Go"]
+order: 3
+---
+
+## なにをするもの？
+
+SlimeVR のトラッカーは、Yaw Reset をしたときの姿勢がずれていると補正もずれてしまいます。かめすらは、スマホの背面カメラで体の骨格を検出して、正しい姿勢になっているかを確認しながらリセットできるようにします。
+
+## 構成
+
+- **mobile**: Flutter（Android / iOS）のアプリ。端末内の ML Kit で骨格を検出してカメラ映像に重ねる
+- **bridge**: Go で書いた SlimeVR との中継
+- **protocol**: スマホ ↔ bridge の通信仕様
+
+チームで開発していて、Flutter と Go のバージョンは mise でプロジェクトごとに固定、CI で Android APK まで作っています。

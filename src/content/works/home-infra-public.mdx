@@ -1,0 +1,16 @@
+---
+title: "おうちインフラ IaC"
+description: "自宅の K3s クラスタを Terraform + Ansible + ArgoCD で丸ごと自動構築するリポジトリ。"
+github: "https://github.com/ieyoukan/home-infra-public"
+tags: ["Self-hosted", "Kubernetes", "Terraform"]
+order: 3
+---
+
+## 構成
+
+GitHub Actions から Terraform で Proxmox 上に VM を作り、Ansible で K3s の HA クラスタ（コントロールプレーン 3 台＋ワーカー 2 台）を組んで、ArgoCD でアプリを GitOps でデプロイします。外への公開は Cloudflare Tunnel 経由です。
+
+- **Infrastructure as Code**: Terraform + Ansible
+- **GitOps**: ArgoCD で宣言的にデプロイ
+- **HA 構成**: kube-vip で仮想 IP をフェイルオーバー
+- **完全自動化**: GitHub Actions で CI/CD

@@ -7,7 +7,22 @@ import {
 	TEXT_PRIMARY,
 	TEXT_SECONDARY,
 	WAVE_DOT,
+	YOKAN_FLAVORS,
 } from "./src/consts/theme";
+
+// ようかんの味: [data-flavor="azuki"] などを付けた要素の中のようかんがその色になる（Yokan.astro）
+const yokanFlavorCss = Object.fromEntries(
+	Object.entries(YOKAN_FLAVORS).map(([name, c]) => [
+		`[data-flavor="${name}"]`,
+		{
+			"--yk-top": c.top,
+			"--yk-face": c.face,
+			"--yk-side": c.side,
+			"--yk-texture": c.texture,
+			"--yk-texture-size": c.textureSize,
+		},
+	]),
+);
 
 export default defineConfig({
 	preflight: true,
@@ -60,8 +75,19 @@ export default defineConfig({
 		},
 	},
 
-	// スクロールバーをサイトの雰囲気（ピンク〜水色）に合わせる
 	globalCss: {
+		// ようかんの切り分けが始まるまで隠す（JS が味を決めて演出を始めるときに外す）
+		"[data-js] [data-yokan-wait]": { visibility: "hidden" },
+		// ようかんのデフォルトは小豆
+		":root": {
+			"--yk-top": YOKAN_FLAVORS.azuki.top,
+			"--yk-face": YOKAN_FLAVORS.azuki.face,
+			"--yk-side": YOKAN_FLAVORS.azuki.side,
+			"--yk-texture": YOKAN_FLAVORS.azuki.texture,
+			"--yk-texture-size": YOKAN_FLAVORS.azuki.textureSize,
+		},
+		...yokanFlavorCss,
+		// スクロールバーをサイトの雰囲気（ピンク〜水色）に合わせる
 		"::-webkit-scrollbar": {
 			width: "6px",
 		},

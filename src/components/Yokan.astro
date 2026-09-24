@@ -1,0 +1,125 @@
+---
+import { css, cx } from "@styled/css";
+
+/**
+ * Yokan — 角の丸い四角の断面を押し出した、CSS 3D のようかん。
+ *
+ * - 断面（前後の面）: 角丸の四角。正面（front）の中身は slot="front" で差し込める
+ * - 側面: 断面の周囲を、直線 4 枚＋角ごとに CORNER_FACETS 枚の細い板で囲む（丸みのある縁）
+ *   板は向きに応じて明るさを変え（上ほど明るい）、縁に光が回って見えるようにする
+ *
+ * サイズは class で CSS 変数を渡す:
+ *   --yk-w: 断面の幅 / --yk-h: 断面の高さ / --yk-d: 押し出しの長さ（厚み） / --yk-r: 角の丸み
+ * 色は祖先要素（または自身）の data-flavor で決まる（panda.config.ts の globalCss）。
+ * 向きは外から transform で付ける（この要素自体が preserve-3d の箱になる）。
+ */
+
+interface Props {
+	class?: string;
+	[key: `data-${string}`]: string | boolean | undefined;
+}
+
+const { class: className, ...rest } = Astro.props;
+
+// ===== 側面の板（サーバー側で幾何を計算して style に埋める） =====
+const CORNER_FACETS = 3;
+const deg = Math.PI / 180;
+const half = 45 / CORNER_FACETS; // 1 枚の板が受け持つ角度の半分
+const apothem = Math.cos(half * deg); // 角の中心から板までの距離（r 倍）
+const chord = 2 * Math.sin(half * deg); // 板の幅（r 倍）
+
+type Wall = { x: string; y: string; angle: number; width: string };
+
+// angle: 板の外向き法線（上 = 0°、時計回り）
+const straight: Wall[] = [
+	{ x: "0px", y: "calc(var(--yk-h) / -2)", angle: 0, width: "calc(var(--yk-w) - 2 * var(--yk-r) + 2px)" },
+	{ x: "calc(var(--yk-w) / 2)", y: "0px", angle: 90, width: "calc(var(--yk-h) - 2 * var(--yk-r) + 2px)" },
+	{ x: "0px", y: "calc(var(--yk-h) / 2)", angle: 180, width: "calc(var(--yk-w) - 2 * var(--yk-r) + 2px)" },
+	{ x: "calc(var(--yk-w) / -2)", y: "0px", angle: 270, width: "calc(var(--yk-h) - 2 * var(--yk-r) + 2px)" },
+];
+
+// 角: [角の中心の x 符号, y 符号, 開始角]
+const corners: [number, number, number][] = [
+	[1, -1, 0],
+	[1, 1, 90],
+	[-1, 1, 180],
+	[-1, -1, 270],
+];
+const round = (n: number) => Math.round(n * 10000) / 10000;
+const facets: Wall[] = corners.flatMap(([sx, sy, start]) =>
+	Array.from({ length: CORNER_FACETS }, (_, i) => {
+		const angle = start + (i + 0.5) * (90 / CORNER_FACETS);
+		const nx = round(Math.sin(angle * deg) * apothem);
+		const ny = round(-Math.cos(angle * deg) * apothem);
+		return {
+			x: `calc(${sx} * (var(--yk-w) / 2 - var(--yk-r)) + ${nx} * var(--yk-r))`,
+			y: `calc(${sy} * (var(--yk-h) / 2 - var(--yk-r)) + ${ny} * var(--yk-r))`,
+			angle,
+			width: `calc(${round(chord)} * var(--yk-r) + 1px)`,
+		};
+	}),
+);
+
+// 模様（チョコチップなど）が面ごとに同じ位置から繰り返さないよう、ずらす量をばらばらにする
+const textureOffset = () => `${Math.round(Math.random() * 67)}px ${Math.round(Math.random() * 59)}px`;
+
+const wallStyle = ({ x, y, angle, width }: Wall) => {
+	// 上向きほど上面の色、下向きほど影の色
+	const light = Math.round(((1 + Math.cos(angle * deg)) / 2) * 100);
+	return [
+		`width: ${width}`,
+		`transform: translate(${x}, ${y}) rotateZ(${round(angle)}deg) rotateX(90deg) translate(-50%, -50%)`,
+		`background-color: color-mix(in srgb, var(--yk-top) ${light}%, var(--yk-side))`,
+		`background-position: ${textureOffset()}`,
+	].join("; ");
+};
+const walls = [...straight, ...facets].map(wallStyle);
+
+// ===== スタイル =====
+const boxStyles = css({
+	"--yk-r": "14px",
+	position: "relative",
+	width: "var(--yk-w)",
+	height: "var(--yk-h)",
+	transformStyle: "preserve-3d",
+	// 切り分けアニメーションで動かすので合成レイヤーにしておく（カクつき防止）
+	willChange: "transform",
+});
+
+// 全ての面: 箱の中心を原点にして transform で置く
+// （同じプロパティを上書きするので cx ではなく css.raw で合成する）
+const faceBase = css.raw({
+	position: "absolute",
+	left: "50%",
+	top: "50%",
+	transformOrigin: "0 0",
+	backfaceVisibility: "hidden",
+	// 味ごとの模様（チョコミントのチップなど。なければ none）
+	backgroundImage: "var(--yk-texture)",
+	backgroundSize: "var(--yk-texture-size)",
+});
+
+const wallStyles = css(faceBase, { height: "var(--yk-d)" });
+
+// 断面: 同じ色の明暗だけのグラデーション＋内側の光で透明感
+const capBase = css.raw({
+	width: "var(--yk-w)",
+	height: "var(--yk-h)",
+	borderRadius: "var(--yk-r)",
+	overflow: "hidden",
+	backgroundImage:
+		"var(--yk-texture), linear-gradient(180deg, color-mix(in srgb, var(--yk-face) 88%, white) 0%, var(--yk-face) 45%, color-mix(in srgb, var(--yk-face) 82%, black) 100%)",
+	backgroundSize: "var(--yk-texture-size), 100% 100%",
+	boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.10), inset 0 10px 18px -8px rgba(255,255,255,0.28)",
+});
+const front = css(faceBase, capBase, { transform: "translateZ(calc(var(--yk-d) / 2)) translate(-50%, -50%)" });
+const back = css(faceBase, capBase, {
+	transform: "rotateY(180deg) translateZ(calc(var(--yk-d) / 2)) translate(-50%, -50%)",
+});
+---
+
+<div class={cx(boxStyles, className)} {...rest}>
+	{walls.map((style) => <div class={wallStyles} style={style}></div>)}
+	<div class={back} style={`background-position: ${textureOffset()}, 0 0`}></div>
+	<div class={front} style={`background-position: ${textureOffset()}, 0 0`}><slot name="front" /></div>
+</div>

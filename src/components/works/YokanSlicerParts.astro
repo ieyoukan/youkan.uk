@@ -1,0 +1,34 @@
+---
+import { css } from "@styled/css";
+import Yokan from "../Yokan.astro";
+
+/**
+ * 切り分けアニメーション（src/lib/yokanCut.ts）が複製して使う部品のひな形。
+ * - data-yokan-loaf-template: 長いようかん。断面は WorkCard の切れ端と同じ（長さは JS が決める）
+ * - data-yokan-thread: 切り分ける糸
+ * 作品カードを並べるページに 1 つ置く。
+ */
+
+const loafStyles = css({
+	"--yk-w": { base: "220px", md: "280px" },
+	"--yk-h": { base: "124px", md: "158px" },
+	"--yk-d": "0px",
+});
+
+const threadStyles = css({
+	position: "absolute",
+	width: "2px",
+	marginLeft: "-1px",
+	borderRadius: "1px",
+	background: "rgba(255,255,255,0.95)",
+	boxShadow: "0 0 6px rgba(255,255,255,0.9)",
+	transformOrigin: "top",
+	pointerEvents: "none",
+	zIndex: 2,
+});
+---
+
+<div hidden>
+	<Yokan class={loafStyles} data-yokan-loaf-template />
+	<div class={threadStyles} data-yokan-thread></div>
+</div>

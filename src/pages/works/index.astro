@@ -3,6 +3,7 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import { css } from "@styled/css";
 import BackLink from "../../components/BackLink.astro";
 import WorkCard from "../../components/works/WorkCard.astro";
+import YokanSlicerParts from "../../components/works/YokanSlicerParts.astro";
 import Layout from "../../layouts/Layout.astro";
 
 // ビルド時に生成（画像最適化のため。index.astro 参照）
@@ -32,25 +33,13 @@ const titleStyles = css({
 	marginBottom: "0.5rem",
 });
 
-// 列数は画面幅で 1 → 2 → 3 に固定（行ごとに左右から出すため列数を確定させる）
-const COLUMNS = [1, 2, 3] as const;
-
+// 切り分けの糸・ようかんを絶対配置するため relative（はみ出た分は画面端で切れる）
 const gridStyles = css({
+	position: "relative",
 	display: "grid",
 	gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
 	gap: "2rem",
 });
-
-// 奇数行は左から、偶数行は右から。画面幅ごとの向きを --dir-1〜3 で受け取り、該当するものを --row-dir に使う
-const cardAnimStyles = css({
-	"--row-dir": { base: "var(--dir-1)", md: "var(--dir-2)", lg: "var(--dir-3)" },
-});
-
-const animVars = (i: number) => {
-	const dirs = COLUMNS.map((cols, n) => `--dir-${n + 1}: ${Math.floor(i / cols) % 2 === 0 ? -1 : 1}`);
-	// 同じ行の中で少しずつ遅らせる（最大列数ぶん）
-	return `${dirs.join("; ")}; --stagger: ${(i % 3) * 0.08}s`;
-};
 
 ---
 
@@ -60,9 +49,9 @@ const animVars = (i: number) => {
 		<div class={headerStyles}>
 			<h1 class={titleStyles}>作品一覧</h1>
 		</div>
-		<div class={gridStyles}>
-			{works.map((work: CollectionEntry<"works">, i: number) => (
-				<div class={cardAnimStyles} data-animate data-dir="row" style={animVars(i)}>
+		<div class={gridStyles} data-works-grid>
+			{works.map((work: CollectionEntry<"works">) => (
+				<div data-yokan-card data-yokan-wait>
 					<WorkCard
 						slug={work.id}
 						title={work.data.title}
@@ -74,5 +63,61 @@ const animVars = (i: number) => {
 				</div>
 			))}
 		</div>
+		<YokanSlicerParts />
 	</div>
 </Layout>
+
+<script>
+	import type { YokanFlavor } from "@consts/theme";
+	import { randomFlavor } from "../../lib/yokan";
+	import { playYokanSlicer } from "../../lib/yokanCut";
+
+	// 行ごとに: ランダムな味（隣の行とは別）のようかんを、奇数行は左・偶数行は右の画面端で切って並べる
+	const grid = document.querySelector<HTMLElement>("[data-works-grid]");
+	const loafTemplate = document.querySelector<HTMLElement>("[data-yokan-loaf-template]");
+	const threadTemplate = document.querySelector<HTMLElement>("[data-yokan-thread]");
+
+	if (grid && loafTemplate && threadTemplate) {
+		// 行は表示位置で判定する（列数は画面幅で変わる）
+		const rows: HTMLElement[][] = [];
+		let lastTop: number | null = null;
+		for (const card of grid.querySelectorAll<HTMLElement>("[data-yokan-card]")) {
+			if (card.offsetTop !== lastTop) {
+				rows.push([]);
+				lastTop = card.offsetTop;
+			}
+			rows[rows.length - 1].push(card);
+		}
+
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		let flavor: YokanFlavor | undefined;
+
+		rows.forEach((cards, i) => {
+			flavor = randomFlavor(flavor);
+			const rowFlavor = flavor;
+			for (const card of cards) card.dataset.flavor = rowFlavor;
+			if (reduceMotion) {
+				for (const card of cards) delete card.dataset.yokanWait;
+				return;
+			}
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					if (!entries.some((e) => e.isIntersecting)) return;
+					observer.disconnect();
+					playYokanSlicer({
+						loafTemplate,
+						host: grid,
+						cards,
+						threadTemplate,
+						dir: i % 2 === 0 ? 1 : -1,
+						flavor: rowFlavor,
+						waiting: cards,
+					});
+				},
+				{ threshold: 0.3 },
+			);
+			observer.observe(cards[0]);
+		});
+	}
+</script>
