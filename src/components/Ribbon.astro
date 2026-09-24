@@ -1,0 +1,34 @@
+---
+import { RIBBON_BLUE, RIBBON_BLUE_DEEP, RIBBON_BLUE_SHADE } from "@consts/theme";
+
+/**
+ * Ribbon — 水色のリボン（蝶ネクタイ形＋長いしっぽ）。セクション境目のフリルの左右に付ける。
+ * 光沢は付けず、平らな塗りと細いふちどりだけ。
+ * しっぽは左へのびる（左側用）。flip で右へのびる（右側用）→ 左右とも外側を向く。
+ * 結び目の位置は viewBox の (150, 34)。大きさ・位置は class で外から決める。
+ */
+
+interface Props {
+	class?: string;
+	/** 左右反転（しっぽを右へ） */
+	flip?: boolean;
+}
+
+const { class: className, flip = false } = Astro.props;
+const stroke = { stroke: RIBBON_BLUE_DEEP, "stroke-width": 1.6, "stroke-linejoin": "round" as const };
+---
+
+<svg class={className} viewBox="0 0 200 90" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+	<g transform={flip ? "translate(200,0) scale(-1,1)" : undefined}>
+		<!-- しっぽ（外側へ長く、ゆるく垂れる。先は V 字に切る） -->
+		<path d="M146 40 C118 52 70 50 26 70 L4 66 L14 80 C58 64 112 62 150 44 Z" fill={RIBBON_BLUE_SHADE} {...stroke} />
+		<path d="M144 36 C114 38 68 30 22 44 L2 36 L10 52 C60 40 114 46 148 42 Z" fill={RIBBON_BLUE} {...stroke} />
+		<!-- 蝶ネクタイ: 左右の羽 -->
+		<path d="M150 34 L120 16 C114 13 110 16 110 22 L110 46 C110 52 114 55 120 52 Z" fill={RIBBON_BLUE} {...stroke} />
+		<path d="M150 34 L180 16 C186 13 190 16 190 22 L190 46 C190 52 186 55 180 52 Z" fill={RIBBON_BLUE} {...stroke} />
+		<!-- 羽のひだ -->
+		<path d="M140 30 L122 24 M140 38 L122 44 M160 30 L178 24 M160 38 L178 44" fill="none" {...stroke} stroke-width="1.2" />
+		<!-- 結び目 -->
+		<rect x="141" y="24" width="18" height="20" rx="6" fill={RIBBON_BLUE_SHADE} {...stroke} />
+	</g>
+</svg>

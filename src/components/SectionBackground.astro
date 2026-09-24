@@ -1,141 +1,128 @@
 ---
-import {
-	SECTION_DARK_BG,
-	SECTION_LIGHT_BG,
-	SECTION_LIGHT_BOT,
-	SECTION_LIGHT_TOP,
-} from "@consts/theme";
+import { FRILL_FABRIC, FRILL_OUTLINE, SECTION_DARK_BG, SECTION_LIGHT_BG, SECTION_LIGHT_BOT, SECTION_LIGHT_TOP } from "@consts/theme";
 /**
- * SectionBackground — セクションの背景色と上下フリル波を管理するコンポーネント。
+ * SectionBackground — セクションの背景と、境目のフリル・リボンを管理するコンポーネント。
  *
- * 【波の実装方式】
- *   従来の「200%幅SVGをtranslateXでループ」方式は、画面幅でアーチ形状が拡縮する問題がある。
- *   代わりに CSS background-image（SVGデータURL）+ background-repeat: repeat-x を使い、
- *   アーチを固定ピクセルでタイリングする。アニメーションは background-position-x のシフトで実現。
+ * 【境目のルール】
+ *   フリルはスカートの裾のように、上のセクションの下から垂れ下がる（bottom、既定でオン）。
+ *   上が透明な場所（ヒーロー・About の下）だけ、そのセクションの上に立ち上がるフリルを付ける（top）。
+ *   1 つの境目にフリルは 1 つだけ。セクションの中身には背景を敷かない（フリルと色がずれて割れて見えるため）。
  *
- *   → 画面幅が変わってもアーチ幅 240px / 大波 360px が常に一定 ✓
- *
- * 【境界の継ぎ目なし】
- *   波の fill 色とセクション背景グラデーションの上・下端色を完全に一致させることで、
- *   矩形の境界線が見えなくなる。グラデーションは 180deg（真上→真下）限定。
+ * 【フリルの実装】
+ *   src/lib/frill.ts でフリル 1 つ分の SVG を作り、background-image の repeat-x で同じ形のまま並べる。
+ *   フリルの帯の上端より上はこのセクションの色で塗ってあるので、境目の線は見えない。
  */
 import { css, cx } from "@styled/css";
+import { mixHex, type RuffleSize, ruffleHeight, ruffleUnitSvg, svgUrl } from "../lib/frill";
+import Ribbon from "./Ribbon.astro";
 
 interface Props {
 	id?: string;
-	animate?: boolean;   // true でコンテンツに floatIn アニメーション
-	dark?: boolean;      // true でダークテーマ（サーバーセクション）
-	bigTop?: boolean;    // 大きい上波（About 前後）
-	bigBottom?: boolean; // 大きい下波（About 前後）
-	hasBottom?: boolean; // false で下波を省略
+	animate?: boolean; // true でコンテンツに floatIn アニメーション
+	dark?: boolean; // true でダークテーマ（サーバーセクション）
+	top?: boolean; // 上に立ち上がるフリル（上が透明なときだけ）
+	bigTop?: boolean;
+	bottom?: boolean; // 下に垂れ下がるフリル（最後のセクションでは false）
+	bigBottom?: boolean;
 }
 
-const {
-	id,
-	animate   = true,
-	dark      = false,
-	bigTop    = false,
-	bigBottom = false,
-	hasBottom = true,
-} = Astro.props;
+const { id, animate = true, dark = false, top = false, bigTop = false, bottom = true, bigBottom = false } = Astro.props;
 
 // ===== テーマ別カラー =====
-const bgStyle    = dark ? SECTION_DARK_BG  : SECTION_LIGHT_BG;
-const topSvgFill = dark ? SECTION_DARK_BG  : SECTION_LIGHT_TOP; // 上端色と一致
-const botSvgFill = dark ? SECTION_DARK_BG  : SECTION_LIGHT_BOT; // 下端色と一致
+const bgStyle = dark ? SECTION_DARK_BG : SECTION_LIGHT_BG;
+const topFill = dark ? SECTION_DARK_BG : SECTION_LIGHT_TOP; // 上端色と一致
+const botFill = dark ? SECTION_DARK_BG : SECTION_LIGHT_BOT; // 下端色と一致
 
-// ===== 1アーチ分のSVGパス =====
-// 通常: 240×64、大: 360×128（画面幅によらず固定ピクセルでタイル）
-const TOP_ONE_FILL   = "M0,64 L0,42 C80,6 160,6 240,42 L240,64 Z";
-const TOP_ONE_STROKE = "M0,42 C80,6 160,6 240,42";
-const BOT_ONE_FILL   = "M0,0 L0,22 C80,58 160,58 240,22 L240,0 Z";
-const BOT_ONE_STROKE = "M0,22 C80,58 160,58 240,22";
+// ===== フリル 1 つの大きさ =====
+// 帯の中心は、境目の線から (sag + band) / 2 のあたり（リボンの位置合わせに使う）
+const SIZES: Record<"normal" | "big", RuffleSize> = {
+	normal: { width: 200, lobes: 4, overlap: 12, sag: 12, band: 9, length: 26, lobeDepth: 10 },
+	big: { width: 320, lobes: 5, overlap: 16, sag: 22, band: 13, length: 42, lobeDepth: 14 },
+};
 
-const BIG_TOP_ONE_FILL   = "M0,128 L0,90 C120,8 240,8 360,90 L360,128 Z";
-const BIG_TOP_ONE_STROKE = "M0,90 C120,8 240,8 360,90";
-const BIG_BOT_ONE_FILL   = "M0,0 L0,38 C120,120 240,120 360,38 L360,0 Z";
-const BIG_BOT_ONE_STROKE = "M0,38 C120,120 240,120 360,38";
-
-// SVGデータURL生成（1アーチ分 → repeat-x でタイル）
-function waveUrl(fill: string, fillPath: string, strokePath: string, w: number, h: number): string {
-	const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'><path d='${fillPath}' fill='${fill}'/><path d='${strokePath}' fill='none' stroke='rgba(125,211,252,0.85)' stroke-width='4' stroke-linecap='round' stroke-dasharray='0 18'/></svg>`;
-	return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+function ruffle(sectionFill: string, big: boolean, flip: boolean) {
+	const size = big ? SIZES.big : SIZES.normal;
+	const svg = ruffleUnitSvg({
+		...size,
+		sectionFill,
+		fabric: mixHex(sectionFill, FRILL_FABRIC, 0.7),
+		outline: FRILL_OUTLINE,
+		flip,
+	});
+	return `background-image: ${svgUrl(svg)}; background-size: ${size.width}px ${ruffleHeight(size)}px;`;
 }
 
-const topUrl = waveUrl(
-	topSvgFill,
-	bigTop ? BIG_TOP_ONE_FILL   : TOP_ONE_FILL,
-	bigTop ? BIG_TOP_ONE_STROKE : TOP_ONE_STROKE,
-	bigTop ? 360 : 240,
-	bigTop ? 128 : 64,
-);
-const botUrl = waveUrl(
-	botSvgFill,
-	bigBottom ? BIG_BOT_ONE_FILL   : BOT_ONE_FILL,
-	bigBottom ? BIG_BOT_ONE_STROKE : BOT_ONE_STROKE,
-	bigBottom ? 360 : 240,
-	bigBottom ? 128 : 64,
-);
+const topRuffle = top ? ruffle(topFill, bigTop, true) : null;
+const bottomRuffle = bottom ? ruffle(botFill, bigBottom, false) : null;
 
 // ===== PandaCSS =====
 const sectionClass = css({ position: "relative" });
 
-// 波要素の共通スタイル（background-image + repeat-x でタイル表示）
-const waveBase = css({
+const ruffleBase = css({
 	position: "absolute",
 	left: 0,
 	width: "100%",
 	pointerEvents: "none",
 	zIndex: 5,
 	backgroundRepeat: "repeat-x",
-	backgroundPosition: "0 0",
+	// 左右対称に並べる（両端のリボンの下が同じ形になる）
+	backgroundPosition: "center top",
 });
 
-// 上波: top=-(ベースy) でベースラインをセクション上端に合わせる
-const topNormal = css({ top: "-42px",  height: "64px",  backgroundSize: "240px 64px"  });
-const topBig    = css({ top: "-90px",  height: "128px", backgroundSize: "360px 128px" });
-// 下波: bottom=-(height-ベースy) でベースラインをセクション下端に合わせる
-const botNormal = css({ bottom: "-42px", height: "64px",  backgroundSize: "240px 64px"  });
-const botBig    = css({ bottom: "-90px", height: "128px", backgroundSize: "360px 128px" });
+// 帯の上端（overlap の位置）を境目の線に合わせる。高さは ruffleHeight と同じ
+const topNormal = css({ bottom: "calc(100% - 12px)", height: "73px" });
+const topBig = css({ bottom: "calc(100% - 16px)", height: "111px" });
+const bottomNormal = css({ top: "calc(100% - 12px)", height: "73px" });
+const bottomBig = css({ top: "calc(100% - 16px)", height: "111px" });
 
-const topWaveClass = cx(waveBase, bigTop    ? topBig    : topNormal);
-const botWaveClass = cx(waveBase, bigBottom ? botBig    : botNormal);
-
-// アニメーション名: background-position-x を1アーチ分シフトしてシームレスループ
-const topAnim  = bigTop    ? "waveBig" : "waveNorm";
-const botAnim  = bigBottom ? "waveBig" : "waveNorm";
-const topSpeed = bigTop    ? "12s" : "10s";
-const botSpeed = bigBottom ? "13s" : "11s";
+// リボン: 結び目（viewBox の 75% / 38%）をフリルの帯の上、画面端から少し内側に置く。しっぽは外側へ
+const ribbonBase = css({
+	position: "absolute",
+	zIndex: 6,
+	width: { base: "110px", md: "150px" },
+	pointerEvents: "none",
+});
+const ribbonLeft = css({ left: { base: "calc(12% - 82px)", md: "calc(7% - 112px)" } });
+const ribbonRight = css({ right: { base: "calc(12% - 82px)", md: "calc(7% - 112px)" } });
+const ribbonOnTop = (big: boolean) =>
+	big ? css({ top: { base: "-36px", md: "-43px" } }) : css({ top: { base: "-29px", md: "-36px" } });
+const ribbonOnBottom = (big: boolean) =>
+	big
+		? css({ top: { base: "calc(100% - 1px)", md: "calc(100% - 8px)" } })
+		: css({ top: { base: "calc(100% - 8px)", md: "calc(100% - 15px)" } });
 ---
 
-<section
-	id={id}
-	class={sectionClass}
-	style={`background: ${bgStyle};`}
-	data-section-theme={dark ? "dark" : "light"}
->
-	<!-- 上波: 固定ピクセルアーチが repeat-x でタイル、background-position-x アニメーション -->
-	<div
-		class={topWaveClass}
-		style={`background-image: ${topUrl}; animation: ${topAnim} ${topSpeed} linear infinite;`}
-		aria-hidden="true"
-	></div>
+<section id={id} class={sectionClass} style={`background: ${bgStyle};`} data-section-theme={dark ? "dark" : "light"}>
+	<!-- 上に立ち上がるフリル（上が透明なときだけ） -->
+	{
+		topRuffle && (
+			<>
+				<div class={cx(ruffleBase, bigTop ? topBig : topNormal)} style={topRuffle} aria-hidden="true" />
+				<Ribbon class={cx(ribbonBase, ribbonLeft, ribbonOnTop(bigTop))} />
+				<Ribbon class={cx(ribbonBase, ribbonRight, ribbonOnTop(bigTop))} flip />
+			</>
+		)
+	}
 
 	<!-- コンテンツ -->
-	{animate ? (
-		<div data-animate>
+	{
+		animate ? (
+			<div data-animate>
+				<slot />
+			</div>
+		) : (
 			<slot />
-		</div>
-	) : (
-		<slot />
-	)}
+		)
+	}
 
-	<!-- 下波: 逆方向スクロール（reverse）で視覚的なリズムを加える -->
-	{hasBottom && (
-		<div
-			class={botWaveClass}
-			style={`background-image: ${botUrl}; animation: ${botAnim} ${botSpeed} linear infinite reverse;`}
-			aria-hidden="true"
-		></div>
-	)}
+	<!-- 下に垂れ下がるフリル（スカートの裾） -->
+	{
+		bottomRuffle && (
+			<>
+				<div class={cx(ruffleBase, bigBottom ? bottomBig : bottomNormal)} style={bottomRuffle} aria-hidden="true" />
+				<Ribbon class={cx(ribbonBase, ribbonLeft, ribbonOnBottom(bigBottom))} />
+				<Ribbon class={cx(ribbonBase, ribbonRight, ribbonOnBottom(bigBottom))} flip />
+			</>
+		)
+	}
 </section>

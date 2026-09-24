@@ -65,3 +65,15 @@ export const YOKAN_FLAVORS = {
 
 export type YokanFlavor = keyof typeof YOKAN_FLAVORS;
 export const YOKAN_FLAVOR_NAMES = Object.keys(YOKAN_FLAVORS) as YokanFlavor[];
+
+// ===== フリル・リボン（セクションの境目） =====
+/** フリルのふちどり・ステッチ・ひだの色（キャラクターの服に合わせた水色） */
+export const FRILL_OUTLINE = "#8fc0e6";
+/** フリルの布（青みのある白） */
+export const FRILL_FABRIC = "#f6fbff";
+/** リボン（光沢なしの平らな塗り） */
+export const RIBBON_BLUE = "#a9dcf6";
+/** リボンのしっぽの裏・結び目 */
+export const RIBBON_BLUE_SHADE = "#8ccbef";
+/** リボンのふちどり */
+export const RIBBON_BLUE_DEEP = "#5fa9d6";

@@ -178,18 +178,6 @@ const wrapperStyles = css({
 		transform: none;
 	}
 
-	/* ===== フリル波アニメーション =====
-	   background-position-x を1アーチ分シフトしてシームレスループ。
-	   通常アーチ: 240px、大アーチ: 360px */
-	@keyframes waveNorm {
-		from { background-position: 0 0; }
-		to   { background-position: -240px 0; }
-	}
-	@keyframes waveBig {
-		from { background-position: 0 0; }
-		to   { background-position: -360px 0; }
-	}
-
 	/* 水紋トレイル: mousemove のたびに JS で生成・削除 */
 	.cursor-ripple {
 		position: fixed;

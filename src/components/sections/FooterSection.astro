@@ -1,10 +1,12 @@
 ---
+import { SECTION_DARK_BG } from "@consts/theme";
 import { css } from "@styled/css";
 
 const footerStyles = css({
 	padding: "3rem 2rem",
 	textAlign: "center",
-	background: "linear-gradient(180deg, #2a1a2e 0%, #1a1a2e 100%)",
+	// サーバーセクションの色から始めて境目を出さない
+	background: SECTION_DARK_BG,
 	color: "white",
 	position: "relative",
 });

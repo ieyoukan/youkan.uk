@@ -207,8 +207,8 @@ const ogpLabelStyles = css({
 const linkColorVars = (color: string) => `--link-color: ${color}`;
 ---
 
-<!-- bigBottom: 下波を大きくしてAboutセクション（透過）との境界を強調 -->
-<SectionBackground id="links" bigBottom>
+<!-- top: ヒーロー（透明）の下なので上にもフリル / bigBottom: About（透明）へ大きく垂れ下がる -->
+<SectionBackground id="links" top bigBottom>
 	<div class={innerStyles}>
 		<div class={containerStyles}>
 			<h2 class={titleStyles}>リンク</h2>
