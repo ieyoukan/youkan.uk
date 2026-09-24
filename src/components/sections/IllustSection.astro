@@ -1,0 +1,118 @@
+---
+import { getImage } from "astro:assets";
+import { TEXT_PRIMARY } from "@consts/theme";
+import { css } from "@styled/css";
+import { fetchPixivPickup, PIXIV_PROFILE_URL } from "../../lib/pixiv";
+import SectionBackground from "../SectionBackground.astro";
+
+// pixiv のピックアップ作品（ビルド時に取得し、画像は WebP 化して自サイトから配信）
+const artworks = await Promise.all(
+	(await fetchPixivPickup()).map(async (art) => ({
+		...art,
+		src: (
+			await getImage({
+				src: art.image,
+				inferSize: true,
+				format: "webp",
+				quality: 85,
+				width: 900,
+			})
+		).src,
+	})),
+);
+
+const innerStyles = css({
+	padding: "6rem 2rem 7rem",
+	display: "flex",
+	flexDirection: "column",
+	alignItems: "center",
+	zIndex: 1,
+});
+
+const titleStyles = css({
+	fontSize: "2.5rem",
+	fontWeight: "bold",
+	color: TEXT_PRIMARY,
+	marginBottom: "0.5rem",
+});
+
+const subtitleStyles = css({
+	fontSize: "1rem",
+	color: "#888",
+	marginBottom: "3rem",
+});
+
+const gridStyles = css({
+	display: "grid",
+	gridTemplateColumns: { base: "1fr", md: "repeat(auto-fit, minmax(360px, 1fr))" },
+	gap: "2rem",
+	width: "100%",
+	maxWidth: "900px",
+});
+
+// 額縁風カード
+const frameStyles = css({
+	display: "block",
+	padding: "10px 10px 0",
+	backgroundColor: "white",
+	borderRadius: "20px",
+	border: "2px dashed rgba(255,182,213,0.8)",
+	boxShadow: "0 6px 28px rgba(180,120,200,0.18)",
+	textDecoration: "none",
+	color: "inherit",
+	transition: "transform 0.25s ease, box-shadow 0.25s ease",
+	_hover: {
+		transform: "translateY(-4px) rotate(-0.5deg)",
+		boxShadow: "0 12px 36px rgba(180,120,200,0.3)",
+	},
+});
+
+const imageStyles = css({
+	display: "block",
+	width: "100%",
+	height: "auto",
+	aspectRatio: "1200/630",
+	objectFit: "cover",
+	borderRadius: "12px",
+});
+
+const captionStyles = css({
+	padding: "0.8rem 0.5rem 1rem",
+	fontSize: "0.95rem",
+	fontWeight: "bold",
+	textAlign: "center",
+	color: TEXT_PRIMARY,
+});
+
+const moreStyles = css({
+	marginTop: "2.5rem",
+	color: "#5c93e6",
+	fontWeight: "bold",
+	textDecoration: "none",
+	_hover: { textDecoration: "underline" },
+});
+---
+
+{
+	artworks.length > 0 && (
+		<SectionBackground id="illust">
+			<div class={innerStyles}>
+				<h2 class={titleStyles}>絵</h2>
+				<p class={subtitleStyles}>pixiv のピックアップ</p>
+
+				<div class={gridStyles}>
+					{artworks.map((art) => (
+						<a href={art.url} target="_blank" rel="noopener noreferrer" class={frameStyles}>
+							<img src={art.src} alt={art.title} class={imageStyles} loading="lazy" decoding="async" />
+							<p class={captionStyles}>{art.title}</p>
+						</a>
+					))}
+				</div>
+
+				<a href={PIXIV_PROFILE_URL} target="_blank" rel="noopener noreferrer" class={moreStyles}>
+					pixiv でもっと見る →
+				</a>
+			</div>
+		</SectionBackground>
+	)
+}

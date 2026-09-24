@@ -1,6 +1,7 @@
 ---
-import { css } from "@styled/css";
+import { css, cx } from "@styled/css";
 import GlobalLayout from "../../layouts/Layout.astro";
+import { markdownStyles } from "../../styles/markdown";
 
 interface Props {
 	title?: string;
@@ -83,42 +84,7 @@ const contentStyle = css({
 	md: {
 		padding: "2rem 2rem",
 	},
-	// --- Markdown要素・共通装飾のスタイル（子孫セレクタでPanda CSSに統合） ---
-	"& h2": {
-		fontSize: "1.5rem",
-		color: "#555",
-		marginTop: "2.5rem",
-		marginBottom: "1rem",
-		borderBottom: "1px solid #eee",
-		paddingBottom: "0.5rem",
-	},
-	"& h3": {
-		fontSize: "1.25rem",
-		color: "#555",
-		marginTop: "2rem",
-		marginBottom: "0.8rem",
-	},
-	"& p": {
-		lineHeight: "1.8",
-		marginBottom: "1.5rem",
-	},
-	"& a": {
-		color: "#5c93e6",
-		textDecoration: "none",
-		transition: "color 0.2s",
-		_hover: {
-			color: "#3b71c7",
-			textDecoration: "underline",
-		},
-	},
-	"& ul, & ol": {
-		marginBottom: "1.5rem",
-		paddingLeft: "1.5rem",
-		lineHeight: "1.8",
-	},
-	"& li": {
-		marginBottom: "0.5rem",
-	},
+	// Markdown 要素のスタイルは markdownStyles（src/styles/markdown.ts）
 	"& .nav-links": {
 		display: "flex",
 		flexWrap: "wrap",
@@ -204,7 +170,7 @@ const backHomeBtnStyle = css({
 				</div>
 			</div>
 		</a>
-		<div class={contentStyle}>
+		<div class={cx(markdownStyles, contentStyle)}>
 			<div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px dashed #e0e0e0; padding-bottom: 1rem; margin-bottom: 1.5rem;">
 				<h1 class={pageTitleStyle}>{title}</h1>
 				<a href="/" class={backHomeBtnStyle}>

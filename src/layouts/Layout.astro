@@ -169,6 +169,10 @@ const wrapperStyles = css({
 	[data-animate][data-dir="right"] {
 		transform: translateX(80px);
 	}
+	/* 行ごと: --row-dir（-1 = 左 / 1 = 右）の向きから */
+	[data-animate][data-dir="row"] {
+		transform: translateX(calc(var(--row-dir, -1) * 80px));
+	}
 	[data-animate].is-visible {
 		opacity: 1;
 		transform: none;

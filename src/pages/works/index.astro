@@ -32,11 +32,25 @@ const titleStyles = css({
 	marginBottom: "0.5rem",
 });
 
+// 列数は画面幅で 1 → 2 → 3 に固定（行ごとに左右から出すため列数を確定させる）
+const COLUMNS = [1, 2, 3] as const;
+
 const gridStyles = css({
 	display: "grid",
-	gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+	gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
 	gap: "2rem",
 });
+
+// 奇数行は左から、偶数行は右から。画面幅ごとの向きを --dir-1〜3 で受け取り、該当するものを --row-dir に使う
+const cardAnimStyles = css({
+	"--row-dir": { base: "var(--dir-1)", md: "var(--dir-2)", lg: "var(--dir-3)" },
+});
+
+const animVars = (i: number) => {
+	const dirs = COLUMNS.map((cols, n) => `--dir-${n + 1}: ${Math.floor(i / cols) % 2 === 0 ? -1 : 1}`);
+	// 同じ行の中で少しずつ遅らせる（最大列数ぶん）
+	return `${dirs.join("; ")}; --stagger: ${(i % 3) * 0.08}s`;
+};
 
 ---
 
@@ -48,11 +62,7 @@ const gridStyles = css({
 		</div>
 		<div class={gridStyles}>
 			{works.map((work: CollectionEntry<"works">, i: number) => (
-				<div
-					data-animate
-					data-dir={i % 2 === 0 ? "left" : "right"}
-					style={`--stagger: ${i * 0.08}s`}
-				>
+				<div class={cardAnimStyles} data-animate data-dir="row" style={animVars(i)}>
 					<WorkCard
 						slug={work.id}
 						title={work.data.title}

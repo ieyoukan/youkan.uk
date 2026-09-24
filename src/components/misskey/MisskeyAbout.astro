@@ -1,0 +1,31 @@
+---
+import { css } from "@styled/css";
+import MisskeyStats from "./MisskeyStats.astro";
+
+/**
+ * MisskeyAbout — Misskey サーバーの紹介文＋稼働状態。
+ * /misskey と作品詳細（src/content/works/misskey.mdx）の両方で表示する。
+ * 稼働状態は実行時に取得するため server:defer で遅延描画する（prerender ページでも最新になる）。
+ */
+
+const loadingStyles = css({ color: "#aaa", fontSize: "0.9rem" });
+---
+
+<h2>概要</h2>
+<p>
+	当サーバーは、おひとりさま（または少人数）向けのMisskeyインスタンスです。<br />
+	ようかんの日常やつぶやき、ツイッターでは発信しないようなことも発信していきます。
+</p>
+
+<h2>紹介</h2>
+<ul>
+	<li>ようかんのMisskeyの運用についてのノート</li>
+	<li>ツイッターが止まったときに使う</li>
+	<li>ぶいみみリレーに参加してVRChatの活動を共有する</li>
+</ul>
+
+<h2>サーバーの状態</h2>
+
+<MisskeyStats server:defer>
+	<p slot="fallback" class={loadingStyles}>サーバーの状態を読み込み中…</p>
+</MisskeyStats>

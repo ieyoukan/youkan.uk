@@ -1,11 +1,12 @@
 ---
 import { getImage } from "astro:assets";
-import { type CollectionEntry, getCollection } from "astro:content";
+import { type CollectionEntry, getCollection, render } from "astro:content";
 import { css, cx } from "@styled/css";
 import videomockSrc from "../../assets/hero/videomock.png";
 import BackLink from "../../components/BackLink.astro";
 import Layout from "../../layouts/Layout.astro";
 import { fetchOgpImage } from "../../lib/ogp";
+import { markdownStyles } from "../../styles/markdown";
 
 // ビルド時に全作品ぶん生成（画像最適化のため。index.astro 参照）
 export const prerender = true;
@@ -20,7 +21,10 @@ interface Props {
 }
 
 const { work } = Astro.props;
-const { title, description, content, url, githubUrl, image, tags } = work.data;
+const { title, description, url, githubUrl, image, tags } = work.data;
+// 本文（src/content/works/*.mdx の frontmatter 以降）
+const { Content } = await render(work);
+const hasBody = Boolean(work.body?.trim());
 const ogpImage = (!image && url) ? await fetchOgpImage(url) : undefined;
 const fallbackImage = (await getImage({ src: videomockSrc, format: "webp", quality: 85 })).src;
 const imgSrc = image ?? ogpImage ?? fallbackImage;
@@ -29,14 +33,23 @@ const pageStyles = css({
 	minHeight: "100vh",
 	maxWidth: "900px",
 	margin: "0 auto",
-	padding: "6rem 2rem 8rem",
+	padding: "6rem 1rem 8rem",
+	md: { padding: "6rem 2rem 8rem" },
+});
+
+// 動画背景の上でも読めるよう、内容は白いカードに載せる
+const cardStyles = css({
+	backgroundColor: "rgba(255,255,255,0.94)",
+	borderRadius: "28px",
+	padding: { base: "1rem 1rem 2rem", md: "1.5rem 2.5rem 3rem" },
+	boxShadow: "0 8px 40px rgba(180,120,200,0.18)",
 });
 
 const heroStyles = css({
 	borderRadius: "24px",
 	overflow: "hidden",
 	aspectRatio: "16/9",
-	marginBottom: "2.5rem",
+	marginBottom: { base: "2rem", md: "2.5rem" },
 	boxShadow: "0 8px 40px rgba(180,120,200,0.2)",
 });
 
@@ -80,13 +93,11 @@ const descStyles = css({
 	marginBottom: "2.5rem",
 });
 
-const contentStyles = css({
+const bodyStyles = css({
+	marginTop: "3rem",
+	paddingTop: "2rem",
+	borderTop: "2px dashed rgba(255,182,213,0.8)",
 	fontSize: "1.05rem",
-	lineHeight: 1.9,
-	color: "#555",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
-	marginBottom: "2.5rem",
-	whiteSpace: "pre-wrap",
 });
 
 const linkUrlStyles = css({
@@ -143,39 +154,45 @@ const linkGhStyles = css({
 	<div class={pageStyles}>
 		<BackLink href="/works" label="作品一覧に戻る" />
 
-		<div class={heroStyles}>
-			<img src={imgSrc} alt={title} class={imgStyles} />
-		</div>
-
-		<h1 class={titleStyles}>{title}</h1>
-
-		{tags.length > 0 && (
-			<div class={tagsStyles}>
-				{tags.map((t: string) => <span class={tagStyles}>{t}</span>)}
+		<article class={cardStyles}>
+			<div class={heroStyles}>
+				<img src={imgSrc} alt={title} class={imgStyles} />
 			</div>
-		)}
 
-		<p class={descStyles}>{description}</p>
+			<h1 class={titleStyles}>{title}</h1>
 
-		{content && <p class={contentStyles}>{content}</p>}
-
-		<div class={linksStyles}>
-			{url && (
-				<a href={url} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkPrimaryStyles)}>
-					<span>
-						サイトを開く →
-						<span class={linkUrlStyles}>{url}</span>
-					</span>
-				</a>
+			{tags.length > 0 && (
+				<div class={tagsStyles}>
+					{tags.map((t: string) => <span class={tagStyles}>{t}</span>)}
+				</div>
 			)}
-			{githubUrl && (
-				<a href={githubUrl} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkGhStyles)}>
-					<span>
-						GitHub でコードを見る
-						<span class={linkUrlStyles}>{githubUrl}</span>
-					</span>
-				</a>
+
+			<p class={descStyles}>{description}</p>
+
+			<div class={linksStyles}>
+				{url && (
+					<a href={url} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkPrimaryStyles)}>
+						<span>
+							サイトを開く →
+							<span class={linkUrlStyles}>{url}</span>
+						</span>
+					</a>
+				)}
+				{githubUrl && (
+					<a href={githubUrl} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkGhStyles)}>
+						<span>
+							GitHub でコードを見る
+							<span class={linkUrlStyles}>{githubUrl}</span>
+						</span>
+					</a>
+				)}
+			</div>
+
+			{hasBody && (
+				<div class={cx(markdownStyles, bodyStyles)}>
+					<Content />
+				</div>
 			)}
-		</div>
+		</article>
 	</div>
 </Layout>

@@ -1,7 +1,10 @@
 import { defineCollection, z } from "astro:content";
+import { glob } from "astro/loaders";
 
+// 作品: src/content/works/*.mdx
+// frontmatter にカード・詳細ページの情報、本文に詳細ページの説明（Markdown / MDX）を書く
 const works = defineCollection({
-	type: "data",
+	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/works" }),
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
@@ -10,8 +13,6 @@ const works = defineCollection({
 		url: z.string().url().optional(),
 		githubUrl: z.string().url().optional(),
 		tags: z.array(z.string()).default([]),
-		/** 詳細ページに表示する本文（Markdown 非対応の簡易テキスト） */
-		content: z.string().optional(),
 		/** 表示順（小さいほど前） */
 		order: z.number().default(0),
 	}),

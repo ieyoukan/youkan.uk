@@ -1,8 +1,0 @@
-{
-	"title": "youkan.uk",
-	"description": "ようかんのホームページ。Astro + PandaCSS + Cloudflare で作った自宅サーバーショーケース。フリルと水をテーマにしたかわいいデザイン。",
-	"url": "https://youkan.uk",
-	"githubUrl": "https://github.com/ieyoukan/youkan.uk",
-	"tags": ["Astro", "PandaCSS", "Cloudflare"],
-	"order": 1
-}
