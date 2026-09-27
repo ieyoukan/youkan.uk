@@ -1,127 +1,89 @@
 ---
 import { Image } from "astro:assets";
 import { css } from "@styled/css";
+import miniPcPhoto from "../../assets/server/minipc.jpg";
+import officePcPhoto from "../../assets/server/officepc.jpg";
+import towerPhoto from "../../assets/server/towerservers.jpg";
+import upsPhoto from "../../assets/server/ups.jpg";
 import misskeyIconSrc from "../../assets/misskey/icon.png";
 import SectionBackground from "../SectionBackground.astro";
+import ServerPhoto from "../ServerPhoto.astro";
 
-// SectionBackground が position/overflow/backgroundColor を担当するためここでは不要
 const innerStyles = css({
 	minHeight: "100vh",
 	display: "flex",
 	alignItems: "center",
 	justifyContent: "center",
-	// 上のセクションのフリルが垂れ下がってくるので、そのぶん空ける
-	padding: "6rem 0 4rem",
+	padding: "6rem 1.25rem 4rem",
 	position: "relative",
 	zIndex: 2,
 });
 
-const container = css({
-	position: "relative",
-	zIndex: 2,
-	maxWidth: "1200px",
+const containerStyles = css({
+	maxWidth: "1100px",
 	width: "100%",
-	padding: "2rem",
 	textAlign: "center",
 });
 
 const titleStyles = css({
 	fontFamily: '"Zen Maru Gothic", sans-serif',
 	fontSize: "3rem",
-	marginBottom: "3rem",
-	textShadow: "0 0 10px rgba(255,255,255,0.5)",
+	marginBottom: "2rem",
 	color: "white",
 });
 
-const serverRackStyles = css({
-	position: "relative",
-	width: "80%",
-	maxWidth: "600px",
-	margin: "0 auto",
-	aspectRatio: "3/5",
-	border: "2px solid #555",
-	backgroundColor: "#222",
-	borderRadius: "10px",
-	boxShadow: "0 0 30px rgba(0, 255, 0, 0.1)",
-	backgroundImage: "repeating-linear-gradient(0deg, #1a1a1a, #1a1a1a 19px, #333 20px)",
+const galleryStyles = css({
+	display: "grid",
+	gridTemplateColumns: "minmax(0, 1fr)",
+	gap: "1rem",
+	md: {
+		gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+		gap: "1.5rem",
+	},
 });
 
+const mainPhotoStyles = css({
+	md: { gridColumn: "1 / -1" },
+});
+
+const linkStyles = css({
+	display: "inline-flex",
+	alignItems: "center",
+	gap: "0.75rem",
+	marginTop: "3rem",
+	padding: "0.8rem 1.25rem",
+	backgroundColor: "serverPhoto.surface",
+	borderWidth: "1px",
+	borderStyle: "solid",
+	borderColor: "serverPhoto.frame",
+	borderRadius: "16px",
+	color: "white",
+	textDecoration: "none !important",
+	fontSize: "1.1rem",
+	fontWeight: "bold",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	transition: "background-color 0.2s ease",
+	_hover: { backgroundColor: "section.darkBg" },
+	_focusVisible: { outlineWidth: "3px", outlineStyle: "solid", outlineColor: "serverPhoto.frame", outlineOffset: "4px" },
+});
 ---
 
-<!-- 背景はセクション（SectionBackground）の色だけ。中身に背景を敷くとフリルと色がずれる -->
 <SectionBackground id="server" dark bottom={false}>
 	<div class={innerStyles}>
-
-		<!-- 背景装飾テキスト -->
-		<div
-			class={css({
-				position: "absolute",
-				zIndex: 0,
-				color: "#444",
-				fontSize: "10rem",
-				fontWeight: "bold",
-				opacity: 0.1,
-			})}
-		>
-			SERVER ROOM
-		</div>
-
-		<div class={container}>
+		<div class={containerStyles}>
 			<h2 class={titleStyles}>サーバー</h2>
-			<p
-				class={css({
-					marginBottom: "2rem",
-					fontSize: "1.2rem",
-					color: "#ccc",
-				})}
-			>
-				Hover over the lights!
-			</p>
-
-			<div class={serverRackStyles}>
-				<!-- 手書き風の矢印テキスト -->
-				<div
-					class={css({
-						position: "absolute",
-						top: "22%",
-						left: "10%",
-						color: "white",
-						transform: "rotate(-20deg)",
-						fontFamily: '"Zen Maru Gothic"',
-					})}
-				>
-					Fast! →
+			<div class={galleryStyles}>
+				<div class={mainPhotoStyles}>
+					<ServerPhoto src={towerPhoto} alt="自宅のタワーサーバー" caption="タワーサーバー" featured />
 				</div>
+				<ServerPhoto src={officePcPhoto} alt="リユースPCのラベル" caption="リユースPC" />
+				<ServerPhoto src={miniPcPhoto} alt="ミニPCとネットワークスイッチ" caption="ミニPCとスイッチ" />
+				<ServerPhoto src={upsPhoto} alt="稼働中の無停電電源装置" caption="UPS" />
 			</div>
-
-			<div class={css({ marginTop: "4rem" })}>
-				<a href="/misskey" class={css({
-					display: "inline-flex",
-					alignItems: "center",
-					gap: "1rem",
-					padding: "1rem 2rem",
-					backgroundColor: "rgba(255, 255, 255, 0.05)",
-					border: "1px solid rgba(255, 255, 255, 0.15)",
-					borderRadius: "16px",
-					color: "white",
-					textDecoration: "none !important",
-					fontSize: "1.2rem",
-					fontWeight: "bold",
-					fontFamily: '"Zen Maru Gothic", sans-serif',
-					backdropFilter: "blur(10px)",
-					transition: "all 0.3s ease",
-					boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-					_hover: {
-						backgroundColor: "rgba(255, 255, 255, 0.15)",
-						transform: "translateY(-4px)",
-						boxShadow: "0 8px 25px rgba(0,0,0,0.4)",
-						borderColor: "rgba(255, 255, 255, 0.3)",
-					}
-				})}>
-					<Image src={misskeyIconSrc} alt="Misskey Icon" width={72} height={72} format="webp" quality={85} class={css({ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" })} />
-					ようかんのみすきー を見る
-				</a>
-			</div>
+			<a href="/misskey" class={linkStyles}>
+				<Image src={misskeyIconSrc} alt="" width={36} height={36} format="webp" quality={85} class={css({ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover" })} />
+				ようかんのみすきー を見る
+			</a>
 		</div>
 	</div>
 </SectionBackground>

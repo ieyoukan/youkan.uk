@@ -8,6 +8,8 @@ import {
 	SECTION_LIGHT_BG,
 	SECTION_LIGHT_BOT,
 	SECTION_LIGHT_TOP,
+	SERVER_PHOTO_FRAME,
+	SERVER_PHOTO_SURFACE,
 	TEXT_PRIMARY,
 	TEXT_SECONDARY,
 	WAVE_DOT,
@@ -52,6 +54,10 @@ export default defineConfig({
 						lightTop: { value: SECTION_LIGHT_TOP },
 						lightBot: { value: SECTION_LIGHT_BOT },
 						darkBg:   { value: SECTION_DARK_BG },
+					},
+					serverPhoto: {
+						frame: { value: SERVER_PHOTO_FRAME },
+						surface: { value: SERVER_PHOTO_SURFACE },
 					},
 					wave: {
 						dot: { value: WAVE_DOT },

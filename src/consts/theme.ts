@@ -19,6 +19,9 @@ export const SECTION_LIGHT_BG =
 
 // ===== ダークセクション（サーバールーム） =====
 export const SECTION_DARK_BG = "#1a1a2e";
+/** サーバー写真のフレームとキャプション */
+export const SERVER_PHOTO_FRAME = "#bdd7f0";
+export const SERVER_PHOTO_SURFACE = "#28283e";
 
 // ===== 装飾 =====
 /** フリル波の水玉ライン色 */
