@@ -1,4 +1,5 @@
 ---
+import { getImage } from "astro:assets";
 import { socialLinks } from "@consts/links";
 import { css, cx } from "@styled/css";
 import LinkIcon from "../LinkIcon.astro";
@@ -16,7 +17,11 @@ function extractOgImage(html: string): string | null {
 	return m?.[1] ?? null;
 }
 
-const ogpImages: Record<string, string | null> = {};
+// OGP 画像はビルド時に取得して WebP 化し、カードの表示幅に合わせた srcset を出す（元画像は 849px など大きい）。
+// sizes はグリッド（max 900px・左右 2rem・2 / sm 3 / md 4 列・gap 1rem）から計算
+const ogpSizes =
+	"(min-width: 964px) 213px, (min-width: 768px) calc((100vw - 7rem) / 4), (min-width: 640px) calc((100vw - 6rem) / 3), calc((100vw - 5rem) / 2)";
+const ogpImages: Record<string, { src: string; srcset: string } | null> = {};
 await Promise.all(
 	socialLinks
 		.filter((l) => l.icon === "ogp")
@@ -29,7 +34,19 @@ await Promise.all(
 					headers: { "User-Agent": "facebookexternalhit/1.1" },
 				});
 				clearTimeout(tid);
-				ogpImages[link.url] = extractOgImage(await res.text());
+				const url = extractOgImage(await res.text());
+				if (!url) {
+					ogpImages[link.url] = null;
+					return;
+				}
+				const image = await getImage({
+					src: new URL(url, link.url).href,
+					inferSize: true,
+					format: "webp",
+					quality: 85,
+					widths: [240, 480, 720],
+				});
+				ogpImages[link.url] = { src: image.src, srcset: image.srcSet.attribute };
 			} catch {
 				ogpImages[link.url] = null;
 			}
@@ -248,7 +265,15 @@ const linkColorVars = (color: string) => `--link-color: ${color}`;
 							// OGP画像あり: 全面表示
 							return (
 								<a href={link.url} class={ogpCardStyles} target="_blank" rel="noopener noreferrer">
-									<img src={ogp} alt={link.label} class={ogpImgStyles} />
+									<img
+										src={ogp.src}
+										srcset={ogp.srcset}
+										sizes={ogpSizes}
+										alt={link.label}
+										loading="lazy"
+										decoding="async"
+										class={ogpImgStyles}
+									/>
 									<span class={ogpLabelStyles}>{link.label}</span>
 								</a>
 							);

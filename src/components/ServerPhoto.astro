@@ -1,7 +1,7 @@
 ---
-import type { ImageMetadata } from "astro";
 import { Image } from "astro:assets";
 import { css, cx } from "@styled/css";
+import type { ImageMetadata } from "astro";
 
 interface Props {
 	src: ImageMetadata;
@@ -11,6 +11,22 @@ interface Props {
 }
 
 const { src, alt, caption, featured = false } = Astro.props;
+
+// 枠の比率（16:9 / 1:1）にビルド時に切り抜き、幅違いを srcset で出す。
+// sizes は ServerSection のグリッド（max 1100px・左右 1.25rem・md 以上は 3 列 gap 1.5rem）と枠の padding 6px×2 から計算
+const variant = featured
+	? {
+			width: 1200,
+			height: 675,
+			widths: [480, 800, 1200, 1600],
+			sizes: "(min-width: 1140px) 1088px, calc(100vw - 3.25rem)",
+		}
+	: {
+			width: 560,
+			height: 560,
+			widths: [320, 480, 680],
+			sizes: "(min-width: 1140px) 339px, (min-width: 768px) calc((100vw - 5.5rem) / 3 - 12px), calc(100vw - 3.25rem)",
+		};
 
 const frameStyles = css({
 	margin: 0,
@@ -45,7 +61,11 @@ const captionStyles = css({
 	<Image
 		src={src}
 		alt={alt}
-		width={featured ? 1200 : 560}
+		width={variant.width}
+		height={variant.height}
+		widths={variant.widths}
+		sizes={variant.sizes}
+		fit="cover"
 		format="webp"
 		quality={85}
 		loading="lazy"

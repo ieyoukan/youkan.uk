@@ -9,13 +9,27 @@ import type { ImageMetadata } from "astro";
 // about_photos/ の画像を全部 WebP 化し、全 URL を data-photos に埋めて JS から参照する。
 // ページはビルド時に生成されるため、初期表示のランダム選択もクリック切り替えも JS 側で行う。
 // src は About が画面に近づいた時点で JS が入れる（それまでは灰色の枠だけ）。
-const photoUrls = await Promise.all(
+// 表示枠と同じ 3:4 にビルド時に切り抜き、幅違いを srcset で出してブラウザに選ばせる。
+const photos = await Promise.all(
 	Object.values(
 		import.meta.glob<{ default: ImageMetadata }>("../../assets/about_photos/*.{png,jpg,jpeg,webp}", {
 			eager: true,
 		}),
-	).map(async (mod) => (await getImage({ src: mod.default, format: "webp", quality: 85, width: 720 })).src),
+	).map(async (mod) => {
+		const image = await getImage({
+			src: mod.default,
+			format: "webp",
+			quality: 85,
+			width: 720,
+			height: 960,
+			fit: "cover",
+			widths: [360, 540, 720, 960],
+		});
+		return { src: image.src, srcset: image.srcSet.attribute };
+	}),
 );
+// 表示幅: スマホは 1 列（section 余白 2rem×2 + ポラロイド余白 1rem×2）、md 以上は 2 列（max 1000px, gap 4rem）
+const photoSizes = "(min-width: 768px) min(448px, calc(50vw - 6rem)), calc(100vw - 6rem)";
 
 const sectionStyles = css({
 	minHeight: "100vh",
@@ -106,9 +120,9 @@ const bioStyles = css({
 			id="about-polaroid"
 			class={polaroidStyles}
 			aria-label="別の写真を見る"
-			data-photos={JSON.stringify(photoUrls)}
+			data-photos={JSON.stringify(photos)}
 		>
-			<img alt="" class={polaroidImage} decoding="async" />
+			<img alt="" class={polaroidImage} decoding="async" sizes={photoSizes} />
 			<div
 				class={css({
 					textAlign: "center",
@@ -148,21 +162,31 @@ const bioStyles = css({
 	const photoImg = polaroid?.querySelector("img");
 
 	if (polaroid && photoImg) {
-		const photos: string[] = JSON.parse(polaroid.dataset.photos ?? "[]");
-		const pickOther = (current: string | null) => {
-			const candidates = photos.filter((url) => url !== current);
+		type Photo = { src: string; srcset: string };
+		const photos: Photo[] = JSON.parse(polaroid.dataset.photos ?? "[]");
+		let current: Photo | undefined;
+		const pickOther = () => {
+			const candidates = photos.filter((photo) => photo !== current);
 			return candidates[Math.floor(Math.random() * candidates.length)];
+		};
+		const show = (photo: Photo) => {
+			current = photo;
+			photoImg.srcset = photo.srcset;
+			photoImg.src = photo.src;
 		};
 
 		// 先読み済みの写真（クリック時はここから取り出すので待たせない）
-		const decoded = new Map<string, Promise<void>>();
-		const load = (url: string) => {
-			let p = decoded.get(url);
+		// sizes・srcset を表示用 img と揃えて、実際に表示されるのと同じ幅の画像を読む
+		const decoded = new Map<Photo, Promise<void>>();
+		const load = (photo: Photo) => {
+			let p = decoded.get(photo);
 			if (!p) {
 				const img = new Image();
-				img.src = url;
+				img.sizes = photoImg.sizes;
+				img.srcset = photo.srcset;
+				img.src = photo.src;
 				p = img.decode().catch(() => {});
-				decoded.set(url, p);
+				decoded.set(photo, p);
 			}
 			return p;
 		};
@@ -174,9 +198,9 @@ const bioStyles = css({
 				if (!entries.some((entry) => entry.isIntersecting)) return;
 				observer.disconnect();
 
-				photoImg.src = photos[Math.floor(Math.random() * photos.length)];
+				show(photos[Math.floor(Math.random() * photos.length)]);
 				photoImg.alt = "ようかんの写真";
-				for (const url of photos) load(url);
+				for (const photo of photos) load(photo);
 			},
 			{ rootMargin: "100% 0px" },
 		);
@@ -189,11 +213,11 @@ const bioStyles = css({
 
 		polaroid.addEventListener("click", async () => {
 			if (busy) return;
-			const next = pickOther(photoImg.getAttribute("src"));
+			const next = pickOther();
 			if (!next) return;
 
 			if (reduceMotion.matches) {
-				photoImg.src = next;
+				show(next);
 				return;
 			}
 
@@ -201,7 +225,7 @@ const bioStyles = css({
 			busy = true;
 			polaroid.dataset.state = "falling";
 			await Promise.all([animationDone(), load(next)]);
-			photoImg.src = next;
+			show(next);
 			polaroid.dataset.state = "dropping";
 			await animationDone();
 			delete polaroid.dataset.state;

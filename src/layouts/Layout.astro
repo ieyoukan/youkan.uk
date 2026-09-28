@@ -6,7 +6,8 @@ import videomockSrc from "../assets/hero/videomock.png";
 import MouseStalker from "../components/MouseStalker.astro";
 import MetaHead from "./MetaHead.astro";
 
-const poster = await getImage({ src: videomockSrc, format: "webp", quality: 85 });
+// <video poster> は srcset を持てないので、全画面表示に足りる幅（元 2560px → 1600px）まで縮めて 1 枚だけ出す
+const poster = await getImage({ src: videomockSrc, format: "webp", quality: 85, width: 1600 });
 // OGP は WebP 非対応の SNS があるため PNG で出力する
 const ogPoster = await getImage({ src: videomockSrc, format: "png", width: 1280, height: 720 });
 

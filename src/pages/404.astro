@@ -1,0 +1,61 @@
+---
+import { css } from "@styled/css";
+import BackLink from "../components/BackLink.astro";
+import Layout from "../layouts/Layout.astro";
+
+// dist/404.html として出力する。これが無いと Cloudflare Pages は存在しない URL に
+// トップページを 200 で返してしまい（SPA 扱い）、/llms.txt や /.well-known/ai-catalog.json を
+// 問い合わせたクローラー・AI エージェントが HTML を受け取ってしまう。
+export const prerender = true;
+
+const pageStyles = css({
+	minHeight: "100vh",
+	display: "flex",
+	flexDirection: "column",
+	alignItems: "center",
+	justifyContent: "center",
+	padding: "6rem 2rem",
+	textAlign: "center",
+});
+
+const cardStyles = css({
+	backgroundColor: "rgba(255, 255, 255, 0.85)",
+	backdropFilter: "blur(16px)",
+	borderRadius: "24px",
+	border: "2px dashed #e0e0e0",
+	boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
+	padding: "2.5rem 2rem 0.5rem",
+	maxWidth: "480px",
+	width: "100%",
+});
+
+const codeStyles = css({
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontSize: "4.5rem",
+	fontWeight: "bold",
+	lineHeight: 1,
+	color: "#4a4a4a",
+	textShadow: "2px 2px 0px rgba(0,0,0,0.1)",
+	marginBottom: "1rem",
+});
+
+const messageStyles = css({
+	fontSize: "1.05rem",
+	lineHeight: 1.8,
+	color: "#555",
+	marginBottom: "2rem",
+});
+---
+
+<Layout title="ページが見つかりません — ようかんのホームページ">
+	<main class={pageStyles}>
+		<div class={cardStyles}>
+			<h1 class={codeStyles}>404</h1>
+			<p class={messageStyles}>
+				ページが見つかりませんでした。<br />
+				URL が違うか、お引っ越ししたのかも……
+			</p>
+			<BackLink href="/" label="ホームに戻る" />
+		</div>
+	</main>
+</Layout>
