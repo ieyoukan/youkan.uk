@@ -12,6 +12,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
 	// prerender ページの Astro.url.origin（canonical / OGP の絶対 URL）に使われる
 	site: "https://youkan.uk",
+	// CSS は全ページ小さい（1 ページ十数 KiB）ので HTML にインライン化し、レンダリングブロックする外部 CSS リクエストをなくす
+	build: { inlineStylesheets: "always" },
 	output: "server",
 	adapter: cloudflare(),
 	integrations: [
