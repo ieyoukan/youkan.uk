@@ -10,7 +10,7 @@ import pixivFallback from "../data/pixiv-fallback.json";
  *   ビルドを落とさず、src/data/pixiv-fallback.json のスナップショットにフォールバックする。
  *   IllustSection は結果が空だとセクションごと非表示にするため、素の空配列を返すと
  *   ビルドログにも残らないまま絵のセクションが消えてしまう（実際に起きた）。
- *   フォールバックの更新は node scripts/update-pixiv-fallback.mjs で手動実行する。
+ *   フォールバックは GitHub Actions が scripts/update-pixiv-fallback.mjs で定期更新する。
  */
 
 export const PIXIV_USER_ID = "36804964";

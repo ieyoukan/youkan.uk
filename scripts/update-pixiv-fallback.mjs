@@ -8,7 +8,7 @@ import fs from "node:fs";
 // （src/lib/pixiv.ts 参照）。その保険として、取得に成功したときのスナップショットを
 // リポジトリにコミットしておき、ビルド時の取得が失敗したらこちらにフォールバックする。
 //
-// 実行方法（pixiv に新しい絵を上げたときなど、手動で更新する）:
+// GitHub Actions（.github/workflows/update-pixiv-fallback.yml）が定期実行する。手動で更新するなら:
 //   node scripts/update-pixiv-fallback.mjs
 
 const PIXIV_USER_ID = "36804964";
