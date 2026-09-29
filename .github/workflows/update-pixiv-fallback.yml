@@ -5,7 +5,8 @@ name: Update pixiv fallback
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    # 毎日 18:00 JST（絵を上げる頻度が高くないので日次で十分）
+    - cron: "0 9 * * *"
   workflow_dispatch:
 
 permissions:
