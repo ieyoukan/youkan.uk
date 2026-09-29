@@ -1,4 +1,4 @@
-export type IconType = "twitter" | "github" | "misskey" | "bluesky" | "ogp";
+export type IconType = "twitter" | "github" | "misskey" | "bluesky" | "zenn" | "ogp";
 
 export type SocialLink = {
 	label: string;
@@ -43,6 +43,14 @@ export const socialLinks: SocialLink[] = [
 		rotate: "-5deg",
 		description: "@youkan.uk",
 		icon: "bluesky",
+	},
+	{
+		label: "Zenn",
+		url: "https://zenn.dev/yokan",
+		color: "#3ea8ff",
+		rotate: "-4deg",
+		description: "@yokan",
+		icon: "zenn",
 	},
 	{
 		label: "ぷぷりえ",

@@ -1,6 +1,6 @@
 ---
 import { getImage } from "astro:assets";
-import { socialLinks } from "@consts/links";
+import { type SocialLink, socialLinks } from "@consts/links";
 import { css, cx } from "@styled/css";
 import LinkIcon from "../LinkIcon.astro";
 import SectionBackground from "../SectionBackground.astro";
@@ -222,6 +222,12 @@ const ogpLabelStyles = css({
 });
 
 const linkColorVars = (color: string) => `--link-color: ${color}`;
+
+// Misskey アイコンは白抜きグリフではなく等身大の写真なので、
+// 他アイコンと同じ余白を持たせると周囲に --link-color の縁（緑の枠）が見えてしまう。
+// ボックスと同じサイズで描画して枠を消し、その分アイコン自体を大きく見せる。
+const iconSize = (icon: SocialLink["icon"], boxSize: number, glyphSize: number) =>
+	icon === "misskey" ? boxSize : glyphSize;
 ---
 
 <!-- top: ヒーロー（透明）の下なので上にもフリル / bigBottom: About（透明）へ大きく垂れ下がる -->
@@ -242,7 +248,7 @@ const linkColorVars = (color: string) => `--link-color: ${color}`;
 					>
 						<div class={featuredRowStyles}>
 							<div class={featuredIconStyles}>
-								<LinkIcon icon={link.icon} color="white" size={32} ogpSrc={null} />
+								<LinkIcon icon={link.icon} color="white" size={iconSize(link.icon, 56, 32)} ogpSrc={null} />
 							</div>
 							<div class={css({ flex: 1 })}>
 								<div class={featuredHeadStyles}>
@@ -288,7 +294,7 @@ const linkColorVars = (color: string) => `--link-color: ${color}`;
 								style={linkColorVars(link.color)}
 							>
 								<div class={cardIconStyles}>
-									<LinkIcon icon={link.icon} color="white" size={28} ogpSrc={null} />
+									<LinkIcon icon={link.icon} color="white" size={iconSize(link.icon, 48, 28)} ogpSrc={null} />
 								</div>
 								<span class={cardLabelStyles}>{link.label}</span>
 								{link.description && <span class={cardDescStyles}>{link.description}</span>}

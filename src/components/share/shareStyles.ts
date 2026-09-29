@@ -57,7 +57,9 @@ const buttonBase = css({
 	fontSize: "1rem",
 	fontFamily: "inherit",
 	textDecoration: "none",
-	cursor: "pointer",
+	// カスタムカーソル（MouseStalker）が全体で cursor: none にしているので、
+	// ここで pointer にすると OS 標準カーソルが割り込んで見えてしまう
+	cursor: "none",
 	transition: "transform 0.2s ease, box-shadow 0.2s ease",
 	_hover: { transform: "translateY(-2px)" },
 	_active: { transform: "translateY(0) scale(0.97)" },

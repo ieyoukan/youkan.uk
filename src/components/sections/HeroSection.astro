@@ -70,7 +70,9 @@ const voiceButtonStyles = css({
 	border: "1px solid rgba(100,100,120,0.35)",
 	borderRadius: "50%",
 	color: "#666",
-	cursor: "pointer",
+	// カスタムカーソル（MouseStalker）が全体で cursor: none にしているので、
+	// ここで pointer にすると OS 標準カーソルが割り込んで見えてしまう
+	cursor: "none",
 	transition: "border-color 0.2s, color 0.2s",
 });
 ---
