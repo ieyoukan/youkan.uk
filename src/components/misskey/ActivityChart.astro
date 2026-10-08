@@ -47,8 +47,8 @@ const yTicks = [maxVal, maxVal / 2, 0].filter((v, i, arr) =>
 
 const wrapStyle    = css({ marginBottom: "1.8rem" });
 const headerStyle  = css({ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.4rem" });
-const labelStyle   = css({ fontSize: "0.85rem", fontWeight: "bold", color: "#555" });
-const totalStyle   = css({ fontSize: "0.8rem", color: "#888" });
+const labelStyle   = css({ fontSize: "0.85rem", fontWeight: "bold", color: "text.body" });
+const totalStyle   = css({ fontSize: "0.8rem", color: "text.muted" });
 const chartRowStyle = css({ display: "flex", gap: "4px", alignItems: "stretch" });
 const yAxisStyle   = css({
 	width: "32px",
@@ -59,9 +59,9 @@ const yAxisStyle   = css({
 	paddingBottom: "18px", // x軸ラベル分の余白
 	alignItems: "flex-end",
 });
-const yTickStyle   = css({ fontSize: "0.6rem", color: "#bbb", lineHeight: 1 });
+const yTickStyle   = css({ fontSize: "0.6rem", color: "text.faint", lineHeight: 1 });
 const svgWrapStyle = css({ flex: 1, overflow: "hidden", borderRadius: "6px", background: "rgba(0,0,0,0.02)" });
-const xAxisStyle   = css({ display: "flex", justifyContent: "space-between", fontSize: "0.6rem", color: "#bbb", padding: "2px 0" });
+const xAxisStyle   = css({ display: "flex", justifyContent: "space-between", fontSize: "0.6rem", color: "text.faint", padding: "2px 0" });
 ---
 
 <div class={wrapStyle}>

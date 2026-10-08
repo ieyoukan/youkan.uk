@@ -10,7 +10,9 @@
 		"prepare": "node scripts/generate-misskey-icons.mjs",
 		"preview": "astro preview",
 		"astro": "astro",
-		"lint": "biome check --write ."
+		"lint": "biome check --write .",
+		"check:lint": "biome check .",
+		"check": "biome check . && panda codegen && astro check"
 	},
 	"dependencies": {
 		"@astrojs/cloudflare": "^12.6.12",
