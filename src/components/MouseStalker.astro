@@ -1,8 +1,8 @@
 ---
 import { getImage } from "astro:assets";
 import { css } from "@styled/css";
-import defaultSrc from "../assets/cusor/default.png";
-import pointerSrc from "../assets/cusor/pointer.png";
+import defaultSrc from "../assets/cursor/default.png";
+import pointerSrc from "../assets/cursor/pointer.png";
 
 const defaultImg = await getImage({ src: defaultSrc, format: "webp", width: 48, height: 48 });
 const pointerImg = await getImage({ src: pointerSrc, format: "webp", width: 48, height: 48 });
@@ -18,6 +18,9 @@ const cursorClass = css({
 	marginTop: "-24px",
 	marginLeft: "-24px",
 	userSelect: "none",
+	// マウスが最初に動くまでは隠す（左上に置き去りのカーソルが見えないように）
+	opacity: 0,
+	"[data-custom-cursor] &": { opacity: 1 },
 });
 ---
 
@@ -25,47 +28,72 @@ const cursorClass = css({
 	id="cursor-image"
 	src={defaultImg.src}
 	alt=""
+	aria-hidden="true"
 	class={cursorClass}
 	data-default={defaultImg.src}
 	data-pointer={pointerImg.src}
 />
 
 <script>
-	const cursorImg = document.getElementById("cursor-image") as HTMLImageElement;
-	if (!cursorImg) throw new Error("cursor-image not found");
+	// マウス操作の端末だけで動かす（タッチ端末では OS のカーソル表示も不要なのでそのまま）
+	const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+	const cursorImg = document.getElementById("cursor-image") as HTMLImageElement | null;
 
-	const defaultSrc = cursorImg.dataset.default!;
-	const pointerSrc = cursorImg.dataset.pointer!;
+	if (cursorImg && finePointer.matches) {
+		const defaultSrc = cursorImg.dataset.default ?? cursorImg.src;
+		const pointerSrc = cursorImg.dataset.pointer ?? cursorImg.src;
 
-	let mouseX = 0;
-	let mouseY = 0;
-	let cursorX = 0;
-	let cursorY = 0;
-	let isHover = false;
+		let mouseX = 0;
+		let mouseY = 0;
+		let cursorX = 0;
+		let cursorY = 0;
+		let isHover = false;
+		let rafId = 0;
 
-	document.addEventListener("mousemove", (e) => {
-		mouseX = e.clientX;
-		mouseY = e.clientY;
-	});
+		const render = () => {
+			cursorX += (mouseX - cursorX) * 0.9;
+			cursorY += (mouseY - cursorY) * 0.9;
+			const scale = isHover ? 1.2 : 1;
+			cursorImg.style.transform = `translate(${cursorX}px, ${cursorY}px) scale(${scale})`;
+			// 追いついたら止める（マウスが止まっている間は毎フレーム描き直さない）
+			if (Math.abs(mouseX - cursorX) > 0.1 || Math.abs(mouseY - cursorY) > 0.1) {
+				rafId = requestAnimationFrame(render);
+			} else {
+				rafId = 0;
+			}
+		};
+		const kick = () => {
+			if (!rafId) rafId = requestAnimationFrame(render);
+		};
 
-	(function animate() {
-		cursorX += (mouseX - cursorX) * 0.9;
-		cursorY += (mouseY - cursorY) * 0.9;
-		const scale = isHover ? 1.2 : 1;
-		cursorImg.style.transform = `translate(${cursorX}px, ${cursorY}px) scale(${scale})`;
-		requestAnimationFrame(animate);
-	})();
+		document.addEventListener("mousemove", (e) => {
+			mouseX = e.clientX;
+			mouseY = e.clientY;
+			if (!("customCursor" in document.documentElement.dataset)) {
+				// 最初の 1 回は飛びつかせずにその場へ置き、ここで OS のカーソルを消す
+				cursorX = mouseX;
+				cursorY = mouseY;
+				document.documentElement.dataset.customCursor = "";
+			}
+			kick();
+		});
 
-	document.addEventListener("mouseover", (e) => {
-		if (e.target instanceof Element && (e.target.closest("a") || e.target.closest("button"))) {
-			cursorImg.src = pointerSrc;
-			isHover = true;
-		}
-	});
-	document.addEventListener("mouseout", (e) => {
-		if (e.target instanceof Element && (e.target.closest("a") || e.target.closest("button"))) {
-			cursorImg.src = defaultSrc;
-			isHover = false;
-		}
-	});
+		const isInteractive = (target: EventTarget | null) =>
+			target instanceof Element && target.closest("a, button") !== null;
+
+		document.addEventListener("mouseover", (e) => {
+			if (isInteractive(e.target)) {
+				cursorImg.src = pointerSrc;
+				isHover = true;
+				kick();
+			}
+		});
+		document.addEventListener("mouseout", (e) => {
+			if (isInteractive(e.target)) {
+				cursorImg.src = defaultSrc;
+				isHover = false;
+				kick();
+			}
+		});
+	}
 </script>
