@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
+import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,6 +19,10 @@ export default defineConfig({
 	adapter: cloudflare(),
 	integrations: [
 		mdx(),
+		sitemap({
+			// Misskey の案内用エラーページは検索対象に含めない
+			filter: (page) => !/\/(?:404|500)\/?$/.test(new URL(page).pathname),
+		}),
 		{
 			// /misskey 配下を全てビルド時に生成する（画像最適化のため。src/pages/index.astro 参照）
 			// .md ページは `export const prerender` を書けないため、ルート設定フックでまとめて指定する
