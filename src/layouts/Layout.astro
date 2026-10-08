@@ -15,11 +15,12 @@ interface Props {
 	title?: string;
 	description?: string;
 	ogImage?: string;
+	noindex?: boolean;
 }
 
-const { title, description, ogImage } = Astro.props;
+const { title, description, ogImage, noindex } = Astro.props;
 // OGP 未指定時は処理済みアセット URL を使用（public/ 不要）
-const defaultOgImage = Astro.url.origin + ogPoster.src;
+const defaultOgImage = ogPoster.src;
 
 const videoBgStyles = css({
 	position: "fixed",
@@ -40,7 +41,7 @@ const wrapperStyles = css({
 
 <html lang="ja">
 	<head>
-		<MetaHead title={title} description={description} ogImage={ogImage ?? defaultOgImage} />
+		<MetaHead title={title} description={description} ogImage={ogImage ?? defaultOgImage} noindex={noindex} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<!-- フォント: JS でノンブロッキング挿入（レンダリングブロック解消）-->

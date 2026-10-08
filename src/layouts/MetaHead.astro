@@ -4,6 +4,7 @@ interface Props {
 	description?: string;
 	keywords?: string;
 	ogImage: string;
+	noindex?: boolean;
 }
 
 const {
@@ -11,9 +12,11 @@ const {
 	description = "家猫ようかんのホームページ。自宅サーバー・リンク・作品置き場。",
 	keywords = "ようかん, youkan, VRChat, ぷぷりえ",
 	ogImage,
+	noindex = false,
 } = Astro.props;
 
-const origin = Astro.url.origin;
+// SSR やプレビュー環境でも astro.config の本番ドメインを使用する
+const origin = Astro.site!.origin;
 const canonicalUrl = `${origin}${Astro.url.pathname}`;
 // Layout から絶対 URL で渡される場合はそのまま、相対パスの場合は origin を付加
 const ogImageUrl = ogImage.startsWith("http") ? ogImage : `${origin}${ogImage}`;
@@ -27,6 +30,7 @@ const ogImageUrl = ogImage.startsWith("http") ? ogImage : `${origin}${ogImage}`;
 <!-- Primary meta -->
 <title>{title}</title>
 <meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex" />}
 <link rel="canonical" href={canonicalUrl} />
 
 <!-- Open Graph -->

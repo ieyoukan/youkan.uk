@@ -10,6 +10,7 @@ interface Props {
 	title?: string;
 	description?: string;
 	hideNavLinks?: boolean;
+	noindex?: boolean;
 	frontmatter?: {
 		title: string;
 		description?: string;
@@ -157,7 +158,7 @@ const backHomeBtnStyle = css({
 });
 ---
 
-<GlobalLayout title={`Misskey - ${title}`} description={description}>
+<GlobalLayout title={`Misskey - ${title}`} description={description} noindex={Astro.props.noindex}>
 	<div class={containerStyle} data-animate>
 		<a href="https://mi.youkan.uk/" target="_blank" rel="noopener noreferrer" class={bannerContainerStyle}>
 			<Image src={bannerSrc} alt="Misskey Banner" class={bannerImgStyle} widths={[800, 1600]} sizes="(max-width: 800px) 100vw, 800px" format="webp" quality={85} loading="eager" />

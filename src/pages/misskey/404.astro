@@ -3,7 +3,7 @@ import notFoundImg from "../../../src/assets/error/みすきー404.png";
 import MisskeyLayout from "../../components/misskey/MisskeyLayout.astro";
 ---
 
-<MisskeyLayout title="404 Not Found" description="指定されたページは存在しません。" hideNavLinks={true}>
+<MisskeyLayout title="404 Not Found" description="指定されたページは存在しません。" hideNavLinks={true} noindex>
 	<div style="text-align: center; padding: 1rem 0;">
 		<img src={notFoundImg.src} alt="404 Not Found" style="max-width: 100%; max-height: 400px; height: auto; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" />
 		<h2>ページが見つかりません。</h2>
