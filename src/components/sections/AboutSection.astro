@@ -61,9 +61,8 @@ const polaroidStyles = css({
 	border: "none",
 	font: "inherit",
 	color: "inherit",
-	// カスタムカーソル（MouseStalker）が全体で cursor: none にしているので、
-	// ここで pointer にすると OS 標準カーソルが割り込んで見えてしまう
-	cursor: "none",
+	// カスタムカーソル（MouseStalker）が動いている間は globalCss の [data-custom-cursor] が none で上書きする
+	cursor: "pointer",
 	backgroundColor: "white",
 	padding: "1rem 1rem 3rem 1rem",
 	boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
@@ -128,7 +127,7 @@ const bioStyles = css({
 			<div
 				class={css({
 					textAlign: "center",
-					fontFamily: '"Zen Maru Gothic", sans-serif',
+					fontFamily: "body",
 					fontWeight: "bold",
 				})}
 			>
@@ -142,8 +141,8 @@ const bioStyles = css({
 				class={css({
 					fontSize: "2.5rem",
 					marginBottom: "1rem",
-					color: "#4a4a4a",
-					fontFamily: '"Zen Maru Gothic", sans-serif',
+					color: "text.primary",
+					fontFamily: "body",
 				})}
 			>
 				About me

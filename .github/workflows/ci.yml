@@ -1,0 +1,35 @@
+# プルリクエストと main への push で lint・型チェック・ビルドが通るか確認する。
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # バージョンは package.json の packageManager を使う
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: mise.toml
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # biome（lint・フォーマット）。--write しない確認だけ
+      - run: pnpm run check:lint
+
+      # astro check は Panda の生成物（styled-system/）が必要なので先に codegen する
+      - run: pnpm exec panda codegen
+      - run: pnpm exec astro check
+
+      - run: pnpm build

@@ -1,11 +1,11 @@
 ---
 import { Image } from "astro:assets";
 import { css } from "@styled/css";
+import misskeyIconSrc from "../../assets/misskey/icon.png";
 import miniPcPhoto from "../../assets/server/minipc.jpg";
 import officePcPhoto from "../../assets/server/officepc.jpg";
 import towerPhoto from "../../assets/server/towerservers.jpg";
 import upsPhoto from "../../assets/server/ups.jpg";
-import misskeyIconSrc from "../../assets/misskey/icon.png";
 import SectionBackground from "../SectionBackground.astro";
 import ServerPhoto from "../ServerPhoto.astro";
 
@@ -26,7 +26,7 @@ const containerStyles = css({
 });
 
 const titleStyles = css({
-	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontFamily: "body",
 	fontSize: "3rem",
 	marginBottom: "2rem",
 	color: "white",
@@ -61,7 +61,7 @@ const linkStyles = css({
 	textDecoration: "none !important",
 	fontSize: "1.1rem",
 	fontWeight: "bold",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontFamily: "body",
 	transition: "background-color 0.2s ease",
 	_hover: { backgroundColor: "section.darkBg" },
 	_focusVisible: { outlineWidth: "3px", outlineStyle: "solid", outlineColor: "serverPhoto.frame", outlineOffset: "4px" },

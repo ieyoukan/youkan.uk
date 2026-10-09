@@ -1,148 +1,156 @@
 ---
-import { css } from "@styled/css";
+import { css, cx } from "@styled/css";
 
+// ページ内の並び順（index.astro）と同じ順番にする
 const menuItems = [
 	{ href: "#hero", label: "Top" },
-	{ href: "#about", label: "About" },
 	{ href: "#links", label: "Links" },
+	{ href: "#about", label: "About" },
 	{ href: "#works", label: "Works" },
+	{ href: "#illust", label: "Illust" },
 	{ href: "#server", label: "Server" },
 ];
+
+const rootClass = css({
+	position: "fixed",
+	bottom: "5%",
+	left: "5%",
+	zIndex: 100,
+});
+
+const menuClass = css({
+	position: "absolute",
+	bottom: "70px",
+	left: 0,
+	minWidth: "120px",
+	display: "flex",
+	flexDirection: "column",
+	gap: "0.15rem",
+	padding: "0.6rem 0.4rem",
+	background: "rgba(255,255,255,0.92)",
+	backdropFilter: "blur(12px)",
+	border: "1px solid token(colors.nav.border)",
+	borderRadius: "18px",
+	boxShadow: "0 6px 24px rgba(0,0,0,0.1)",
+	// 閉じている間は visibility で隠して Tab でも辿れないようにする（閉じるアニメーションの後で切り替える）
+	opacity: 0,
+	visibility: "hidden",
+	transform: "translateY(8px)",
+	transition: "opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s",
+	_open: {
+		opacity: 1,
+		visibility: "visible",
+		transform: "translateY(0)",
+		transition: "opacity 0.25s ease, transform 0.25s ease, visibility 0s",
+	},
+});
+
+const menuLinkClass = css({
+	display: "block",
+	padding: "0.45rem 1rem",
+	fontSize: "0.85rem",
+	color: "nav.text",
+	textDecoration: "none",
+	whiteSpace: "nowrap",
+	borderRadius: "12px",
+	transition: "background 0.15s",
+	_hover: { background: "nav.hover" },
+	_focusVisible: { background: "nav.hover", outline: "2px solid token(colors.nav.border)" },
+});
+
+const buttonClass = css({
+	position: "relative",
+	width: "60px",
+	height: "40px",
+	background: "white",
+	border: "2px solid token(colors.nav.teacupRim)",
+	borderRadius: "0 0 30px 30px",
+	cursor: "pointer",
+	transition: "border-color 0.2s",
+	_hover: { borderColor: "nav.border" },
+	_focusVisible: { outline: "2px solid token(colors.nav.border)", outlineOffset: "4px" },
+});
+
+const steamBase = css({
+	position: "absolute",
+	width: "8px",
+	background: "rgba(255,255,255,0.5)",
+	borderRadius: "10px",
+	filter: "blur(3px)",
+	pointerEvents: "none",
+	"@media (prefers-reduced-motion: reduce)": { animation: "none" },
+});
+const steam1 = css({ top: "-30px", left: "10px", height: "30px", animation: "steam 2s infinite ease-out" });
+const steam2 = css({ top: "-20px", left: "30px", height: "25px", animation: "steam 2.5s infinite ease-out 0.5s" });
+
+const handleClass = css({
+	position: "absolute",
+	top: "5px",
+	right: "-15px",
+	width: "20px",
+	height: "20px",
+	borderRadius: "50%",
+	border: "3px solid white",
+	pointerEvents: "none",
+});
 ---
 
-<div id="teacup-root" style="position: fixed; bottom: 5%; left: 5%; z-index: 100;">
-	<!-- Navigation menu (hidden by default) -->
-	<nav
-		id="teacup-menu"
-		style="
-			position: absolute;
-			bottom: 70px;
-			left: 0;
-			background: rgba(255,255,255,0.92);
-			backdrop-filter: blur(12px);
-			border: 1px solid rgba(180,140,220,0.3);
-			border-radius: 18px;
-			padding: 0.6rem 0.4rem;
-			display: flex;
-			flex-direction: column;
-			gap: 0.15rem;
-			box-shadow: 0 6px 24px rgba(0,0,0,0.1);
-			opacity: 0;
-			pointer-events: none;
-			transform: translateY(8px);
-			transition: opacity 0.25s ease, transform 0.25s ease;
-			min-width: 120px;
-		"
-	>
-		{menuItems.map((item) => (
-			<a
-				href={item.href}
-				style="
-					display: block;
-					padding: 0.45rem 1rem;
-					font-size: 0.85rem;
-					font-family: 'Zen Maru Gothic', sans-serif;
-					color: #5a4a6a;
-					text-decoration: none;
-					border-radius: 12px;
-					transition: background 0.15s;
-					white-space: nowrap;
-				"
-				class="teacup-menu-link"
-			>
-				{item.label}
-			</a>
-		))}
+<div id="teacup-root" class={rootClass}>
+	<!-- ナビゲーション（ティーカップを押すと開く） -->
+	<nav id="teacup-menu" class={menuClass} aria-label="ページ内メニュー">
+		{
+			menuItems.map((item) => (
+				<a href={item.href} class={menuLinkClass} data-teacup-link>
+					{item.label}
+				</a>
+			))
+		}
 	</nav>
 
-	<!-- Tea cup button -->
+	<!-- ティーカップのボタン -->
 	<button
 		id="teacup-btn"
-		aria-label="Navigation menu"
+		type="button"
+		class={buttonClass}
+		aria-label="メニューを開く"
+		aria-controls="teacup-menu"
 		aria-expanded="false"
-		style="
-			position: relative;
-			width: 60px;
-			height: 40px;
-			background: white;
-			border: 2px solid #e0e0e0;
-			border-radius: 0 0 30px 30px;
-			cursor: none;
-			outline: none;
-			transition: border-color 0.2s;
-		"
 	>
-		<!-- Steam 1 -->
-		<div style="
-			position: absolute;
-			top: -30px;
-			left: 10px;
-			width: 8px;
-			height: 30px;
-			background: rgba(255,255,255,0.5);
-			border-radius: 10px;
-			filter: blur(3px);
-			animation: steam 2s infinite ease-out;
-			pointer-events: none;
-		"></div>
-		<!-- Steam 2 -->
-		<div style="
-			position: absolute;
-			top: -20px;
-			left: 30px;
-			width: 8px;
-			height: 25px;
-			background: rgba(255,255,255,0.5);
-			border-radius: 10px;
-			filter: blur(3px);
-			animation: steam 2.5s infinite ease-out 0.5s;
-			pointer-events: none;
-		"></div>
-		<!-- Handle -->
-		<div style="
-			position: absolute;
-			top: 5px;
-			right: -15px;
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
-			border: 3px solid white;
-			pointer-events: none;
-		"></div>
+		<span class={cx(steamBase, steam1)} aria-hidden="true"></span>
+		<span class={cx(steamBase, steam2)} aria-hidden="true"></span>
+		<span class={handleClass} aria-hidden="true"></span>
 	</button>
 </div>
 
-<style>
-	.teacup-menu-link:hover {
-		background: rgba(180, 140, 220, 0.12);
-	}
-</style>
-
 <script>
+	const root = document.getElementById("teacup-root");
 	const btn = document.getElementById("teacup-btn");
 	const menu = document.getElementById("teacup-menu");
-	let open = false;
 
-	function setOpen(value: boolean) {
-		open = value;
-		if (menu) {
-			menu.style.opacity = open ? "1" : "0";
-			menu.style.pointerEvents = open ? "auto" : "none";
-			menu.style.transform = open ? "translateY(0)" : "translateY(8px)";
-		}
-		if (btn) btn.setAttribute("aria-expanded", String(open));
+	function setOpen(open: boolean) {
+		menu?.toggleAttribute("data-open", open);
+		btn?.setAttribute("aria-expanded", String(open));
+		btn?.setAttribute("aria-label", open ? "メニューを閉じる" : "メニューを開く");
 	}
+	const isOpen = () => menu?.hasAttribute("data-open") ?? false;
 
-	btn?.addEventListener("click", (e) => {
-		e.stopPropagation();
-		setOpen(!open);
+	btn?.addEventListener("click", () => setOpen(!isOpen()));
+
+	// メニューの外をクリックしたら閉じる
+	document.addEventListener("click", (e) => {
+		if (isOpen() && !root?.contains(e.target as Node)) setOpen(false);
 	});
 
-	// Close on outside click
-	document.addEventListener("click", () => setOpen(false));
+	// Esc で閉じてボタンにフォーカスを戻す
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Escape" && isOpen()) {
+			setOpen(false);
+			btn?.focus();
+		}
+	});
 
-	// Close on nav link click (smooth scroll handled by browser #hash)
-	document.querySelectorAll(".teacup-menu-link").forEach((link) => {
+	// 項目を選んだら閉じる（スクロールは Layout.astro の smoothScroll が担当）
+	for (const link of document.querySelectorAll("[data-teacup-link]")) {
 		link.addEventListener("click", () => setOpen(false));
-	});
+	}
 </script>

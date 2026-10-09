@@ -28,8 +28,21 @@ export const SERVER_PHOTO_SURFACE = "#28283e";
 export const WAVE_DOT = "rgba(125,211,252,0.85)";
 
 // ===== テキスト =====
+/** 見出し・本文の基本色 */
 export const TEXT_PRIMARY   = "#4a4a4a";
+/** 説明文など一段薄い文字 */
 export const TEXT_SECONDARY = "#666";
+/** カード上のラベルなど、背景が明るく濃いめにしたい文字 */
+export const TEXT_STRONG    = "#333";
+/** サブ見出し・本文寄りの文字 */
+export const TEXT_BODY      = "#555";
+/** 補足・キャプション */
+export const TEXT_MUTED     = "#888";
+/** グラフの目盛りなど最も薄い文字 */
+export const TEXT_FAINT     = "#bbb";
+
+// ===== フォント =====
+export const FONT_BODY = '"Zen Maru Gothic", system-ui, sans-serif';
 
 // ===== ボタン =====
 /** かわいいボタンの背景（ピンク → 水色） */
@@ -80,6 +93,22 @@ export const RIBBON_BLUE = "#a9dcf6";
 export const RIBBON_BLUE_SHADE = "#8ccbef";
 /** リボンのふちどり */
 export const RIBBON_BLUE_DEEP = "#5fa9d6";
+
+// ===== ナビゲーション（ティーカップのメニュー） =====
+/** メニューの文字色 */
+export const NAV_TEXT = "#5a4a6a";
+/** メニュー項目のホバー背景（ピンク寄り） */
+export const NAV_HOVER = "rgba(255,182,213,0.22)";
+/** メニューの枠線（水色寄り） */
+export const NAV_BORDER = "rgba(143,192,230,0.45)";
+/** ティーカップのふち */
+export const TEACUP_RIM = "#e0e0e0";
+
+// ===== カーソル演出 =====
+/** 水紋トレイル */
+export const CURSOR_RIPPLE = "rgba(125,211,252,0.55)";
+/** クリックの輪 */
+export const CURSOR_BURST = "rgba(125,211,252,0.75)";
 
 // ===== フッター =====
 /** フッターの色（サーバーセクションより少し明るい紫紺。波の形が見えるように） */

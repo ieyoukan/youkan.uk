@@ -2,20 +2,9 @@
 import { getImage } from "astro:assets";
 import { type SocialLink, socialLinks } from "@consts/links";
 import { css, cx } from "@styled/css";
+import { fetchOgpImage } from "../../lib/ogp";
 import LinkIcon from "../LinkIcon.astro";
 import SectionBackground from "../SectionBackground.astro";
-
-// --- OGP画像取得（SSR） ---
-function extractOgImage(html: string): string | null {
-	let m = html.match(
-		/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
-	);
-	if (m?.[1]) return m[1];
-	m = html.match(
-		/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
-	);
-	return m?.[1] ?? null;
-}
 
 // OGP 画像はビルド時に取得して WebP 化し、カードの表示幅に合わせた srcset を出す（元画像は 849px など大きい）。
 // sizes はグリッド（max 900px・左右 2rem・2 / sm 3 / md 4 列・gap 1rem）から計算
@@ -26,21 +15,14 @@ await Promise.all(
 	socialLinks
 		.filter((l) => l.icon === "ogp")
 		.map(async (link) => {
+			const url = await fetchOgpImage(link.url);
+			if (!url) {
+				ogpImages[link.url] = null;
+				return;
+			}
 			try {
-				const controller = new AbortController();
-				const tid = setTimeout(() => controller.abort(), 3000);
-				const res = await fetch(link.url, {
-					signal: controller.signal,
-					headers: { "User-Agent": "facebookexternalhit/1.1" },
-				});
-				clearTimeout(tid);
-				const url = extractOgImage(await res.text());
-				if (!url) {
-					ogpImages[link.url] = null;
-					return;
-				}
 				const image = await getImage({
-					src: new URL(url, link.url).href,
+					src: url,
 					inferSize: true,
 					format: "webp",
 					quality: 85,
@@ -76,8 +58,8 @@ const titleStyles = css({
 	fontWeight: "bold",
 	textAlign: "center",
 	marginBottom: "3rem",
-	color: "#4a4a4a",
-	fontFamily: '"Zen Maru Gothic", sans-serif',
+	color: "text.primary",
+	fontFamily: "body",
 });
 
 // 自宅サーバーリンク用の大きめカード
@@ -91,7 +73,7 @@ const featuredCardStyles = css({
 	marginBottom: "1.5rem",
 	boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
 	border: "1px solid color-mix(in srgb, var(--link-color) 33%, transparent)",
-	color: "#333",
+	color: "text.strong",
 	transition: "transform 0.3s ease, box-shadow 0.3s ease",
 	_hover: {
 		transform: "translateY(-4px)",
@@ -119,7 +101,7 @@ const cardStyles = css({
 	backdropFilter: "blur(16px)",
 	borderRadius: "18px",
 	padding: "1.5rem 1rem",
-	color: "#333",
+	color: "text.strong",
 	boxShadow: "0 3px 16px rgba(0,0,0,0.07)",
 	border: "1.5px solid rgba(255,255,255,0.9)",
 	transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
@@ -189,16 +171,16 @@ const badgeStyles = css({
 	letterSpacing: "0.04em",
 });
 
-const featuredDescStyles = css({ fontSize: "0.9rem", color: "#666" });
+const featuredDescStyles = css({ fontSize: "0.9rem", color: "text.secondary" });
 
 const cardLabelStyles = css({
 	fontSize: "0.95rem",
 	fontWeight: "bold",
-	color: "#4a4a4a",
+	color: "text.primary",
 	textAlign: "center",
 });
 
-const cardDescStyles = css({ fontSize: "0.75rem", color: "#888", textAlign: "center" });
+const cardDescStyles = css({ fontSize: "0.75rem", color: "text.muted", textAlign: "center" });
 
 const ogpImgStyles = css({
 	position: "absolute",

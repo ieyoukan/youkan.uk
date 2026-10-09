@@ -1,16 +1,1 @@
 @layer reset, base, tokens, recipes, utilities;
-
-
-html,
-body {
-	background-color: transparent;
-	color: #3a3a3a;
-	font-family: "Zen Maru Gothic", system-ui, sans-serif;
-	min-height: 100vh;
-	margin: 0;
-	cursor: none;
-}
-
-body {
-	overflow-x: clip;
-}
