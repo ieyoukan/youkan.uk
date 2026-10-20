@@ -8,6 +8,11 @@ import {
 	GOODS_HOVER_SHADOW,
 	GOODS_SHADOW,
 	GOODS_SURFACE,
+	HISTORY_ACCENT,
+	HISTORY_BORDER,
+	HISTORY_LINE,
+	HISTORY_SHADOW,
+	HISTORY_SURFACE,
 	SECTION_DARK_BG,
 	SECTION_LIGHT_BG,
 	SECTION_LIGHT_BOT,
@@ -53,6 +58,7 @@ export default defineConfig({
 					body: { value: '"Zen Maru Gothic", system-ui, sans-serif' },
 				},
 				shadows: {
+					history: { value: HISTORY_SHADOW },
 					goods: { value: GOODS_SHADOW },
 					goodsHover: { value: GOODS_HOVER_SHADOW },
 				},
@@ -60,6 +66,12 @@ export default defineConfig({
 					button: { value: BUTTON_BG },
 				},
 				colors: {
+					history: {
+						surface: { value: HISTORY_SURFACE },
+						border: { value: HISTORY_BORDER },
+						accent: { value: HISTORY_ACCENT },
+						line: { value: HISTORY_LINE },
+					},
 					goods: {
 						surface: { value: GOODS_SURFACE },
 						border: { value: GOODS_BORDER },

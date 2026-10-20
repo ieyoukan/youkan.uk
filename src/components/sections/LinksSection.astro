@@ -230,8 +230,8 @@ const iconSize = (icon: SocialLink["icon"], boxSize: number, glyphSize: number) 
 	icon === "misskey" ? boxSize : glyphSize;
 ---
 
-<!-- top: ヒーロー（透明）の下なので上にもフリル / bigBottom: About（透明）へ大きく垂れ下がる -->
-<SectionBackground id="links" top bigBottom>
+<!-- 透明な自己紹介の下へ立ち上がる大きいフリル。物販との境目は通常の下フリル。 -->
+<SectionBackground id="links" top bigTop>
 	<div class={innerStyles}>
 		<div class={containerStyles}>
 			<h2 class={titleStyles}>リンク</h2>
@@ -306,4 +306,3 @@ const iconSize = (icon: SocialLink["icon"], boxSize: number, glyphSize: number) 
 		</div>
 	</div>
 </SectionBackground>
-

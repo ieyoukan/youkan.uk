@@ -45,6 +45,13 @@ export const GOODS_BORDER = "#f2c6db";
 export const GOODS_SHADOW = "0 6px 28px rgba(180,120,200,0.14)";
 export const GOODS_HOVER_SHADOW = "0 12px 32px rgba(180,120,200,0.24)";
 
+// ===== 活動のきろく =====
+export const HISTORY_SURFACE = "#fffcfe";
+export const HISTORY_BORDER = "#e9c8dc";
+export const HISTORY_ACCENT = "#a75d83";
+export const HISTORY_LINE = "#c3dbef";
+export const HISTORY_SHADOW = "0 4px 20px rgba(110,80,130,0.10)";
+
 // ===== ようかん =====
 /** チョコミントのチップ（こげ茶の欠片を大小・縦横ばらばらに散らしたタイル。面ごとに位置をずらして使う） */
 const CHOCO_CHIPS = [

@@ -1,0 +1,139 @@
+---
+import { css } from "@styled/css";
+import { history } from "../../data/history";
+
+const detailsStyles = css({
+	minWidth: 0,
+	backgroundColor: "history.surface",
+	border: "1px solid",
+	borderColor: "history.border",
+	borderRadius: "2xl",
+	boxShadow: "history",
+	fontFamily: "body",
+	color: "text.primary",
+	"&[open] .history-chevron": { transform: "rotate(180deg)" },
+	"&[open] .history-open-label": { display: "none" },
+	"&:not([open]) .history-close-label": { display: "none" },
+});
+
+const summaryStyles = css({
+	display: "flex",
+	alignItems: "center",
+	gap: "3",
+	padding: { base: "4", md: "5" },
+	listStyle: "none",
+	borderRadius: "2xl",
+	cursor: "none",
+	"&::-webkit-details-marker": { display: "none" },
+	_hover: { backgroundColor: "section.lightTop" },
+	_focusVisible: { outline: "3px solid", outlineColor: "history.accent", outlineOffset: "-3px" },
+});
+
+const headingStyles = css({ fontSize: "md", fontWeight: "bold", lineHeight: "1.6" });
+const hintStyles = css({ fontSize: "xs", color: "text.secondary", lineHeight: "1.8" });
+const toggleStyles = css({
+	display: "flex",
+	alignItems: "center",
+	gap: "1",
+	flexShrink: 0,
+	marginLeft: "auto",
+	fontSize: "xs",
+	color: "history.accent",
+});
+const chevronStyles = css({
+	transition: "transform 0.3s ease",
+	_motionReduce: { transition: "none" },
+});
+
+// 見出しを残したまま年表の中だけスクロールさせ、開閉でページが大きく伸びるのを防ぐ。
+const scrollStyles = css({
+	maxHeight: "min(24rem, 50svh)",
+	overflowY: "auto",
+	overscrollBehaviorY: "contain",
+	scrollbarGutter: "stable",
+	marginInline: { base: "5", md: "6" },
+	marginBottom: "4",
+	borderTop: "1px dashed",
+	borderColor: "history.border",
+	borderRadius: "sm",
+	_focusVisible: { outline: "2px solid", outlineColor: "history.accent", outlineOffset: "3px" },
+});
+const listStyles = css({
+	listStyle: "none",
+	paddingTop: "2",
+	paddingBottom: "2",
+});
+const scrollHintStyles = css({
+	fontSize: "xs",
+	color: "text.secondary",
+	paddingInline: { base: "5", md: "6" },
+	paddingBottom: "3",
+});
+const entryStyles = css({
+	position: "relative",
+	marginLeft: "2",
+	paddingLeft: "6",
+	paddingTop: "5",
+	paddingBottom: "5",
+	borderLeft: "2px dotted",
+	borderColor: "history.line",
+	_before: {
+		content: '""',
+		position: "absolute",
+		left: "-6px",
+		top: "6",
+		width: "2.5",
+		height: "2.5",
+		borderRadius: "full",
+		backgroundColor: "history.border",
+		border: "2px solid",
+		borderColor: "history.surface",
+	},
+});
+const dateStyles = css({ fontSize: "xs", color: "history.accent", fontWeight: "bold", letterSpacing: "0.04em" });
+const titleStyles = css({ fontSize: "sm", fontWeight: "bold", lineHeight: "1.8", marginTop: "1" });
+const descriptionStyles = css({ fontSize: "xs", color: "text.secondary", lineHeight: "1.9", marginTop: "1" });
+const linkStyles = css({
+	display: "inline-block",
+	fontSize: "xs",
+	fontWeight: "bold",
+	color: "history.accent",
+	textDecoration: "underline",
+	textDecorationStyle: "dotted",
+	textUnderlineOffset: "4px",
+	paddingBlock: "2",
+	borderRadius: "sm",
+	_hover: { textDecorationStyle: "solid" },
+	_focusVisible: { outline: "2px solid", outlineOffset: "3px" },
+});
+---
+
+<details class={detailsStyles} id="activity-history">
+	<summary class={summaryStyles}>
+		<span>
+			<span class={headingStyles}>活動のきろく</span>
+			<span class={css({ display: "block" })}><span class={hintStyles}>VRChat・技術・掲載記事</span></span>
+		</span>
+		<span class={toggleStyles}>
+			<span class="history-open-label">ひらく</span>
+			<span class="history-close-label">とじる</span>
+			<svg class={`history-chevron ${chevronStyles}`} aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4" /></svg>
+		</span>
+	</summary>
+	<p class={scrollHintStyles}>スクロールして、これまでのきろくをたどる ↓</p>
+	<div class={scrollStyles} role="region" aria-label="活動の年表" tabindex="0" data-lenis-prevent>
+		<ol class={listStyles} aria-label="活動のきろく（古い順）">
+			{history.map((entry) => (
+				<li class={entryStyles}>
+					<div class={dateStyles}>
+						<time datetime={entry.date}>{entry.dateLabel}</time>
+						{entry.endDate && <><span aria-hidden="true"> → </span><span class={css({ srOnly: true })}>から</span><time datetime={entry.endDate}>{entry.endDateLabel}</time></>}
+					</div>
+					<p class={titleStyles}>{entry.title}</p>
+					{entry.description && <p class={descriptionStyles}>{entry.description}</p>}
+					{entry.link && <a href={entry.link.url} target="_blank" rel="noopener noreferrer" class={linkStyles}>{entry.link.label} <span aria-hidden="true">↗</span></a>}
+				</li>
+			))}
+		</ol>
+	</div>
+</details>

@@ -11,17 +11,6 @@ const heroStyles = css({
 	textAlign: "center",
 });
 
-const overlayStyles = css({
-	position: "absolute",
-	top: 0,
-	left: 0,
-	width: "100%",
-	height: "100%",
-	// Slightly stronger overlay so text is readable while video still shows through
-	background: "rgba(255,255,255,0.35)",
-	zIndex: 0,
-});
-
 const contentStyles = css({
 	position: "relative",
 	zIndex: 1,
@@ -78,8 +67,6 @@ const voiceButtonStyles = css({
 ---
 
 <section id="hero" class={heroStyles}>
-	<div class={overlayStyles}></div>
-
 	<div class={contentStyles}>
 		<h1 class={titleStyles}>ようかん</h1>
 		<p class={subtitleStyles}>Dev & VTuber / House Cat</p>
@@ -118,5 +105,5 @@ const voiceButtonStyles = css({
 		}
 	</script>
 
-	<!-- Hero→Links の境界フリルは LinksSection の上波が担当するため下波不要 -->
+	<!-- ヒーローから自己紹介へは透明な背景を続ける -->
 </section>

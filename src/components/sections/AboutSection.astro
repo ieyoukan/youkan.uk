@@ -2,9 +2,10 @@
 import { getImage } from "astro:assets";
 import { css } from "@styled/css";
 import type { ImageMetadata } from "astro";
+import ActivityHistory from "../about/ActivityHistory.astro";
 
 // このセクションは背景なし（透過）で動画が見える。
-// 上下の大きいフリル波は隣接する LinksSection・GoodsSection が担当する。
+// ヒーローの下から続けて表示し、下の大きいフリルは LinksSection が担当する。
 
 // about_photos/ の画像を全部 WebP 化し、全 URL を data-photos に埋めて JS から参照する。
 // ページはビルド時に生成されるため、初期表示のランダム選択もクリック切り替えも JS 側で行う。
@@ -33,7 +34,10 @@ const photoSizes = "(min-width: 768px) min(448px, calc(50vw - 6rem)), calc(100vw
 
 const sectionStyles = css({
 	minHeight: "100vh",
-	padding: "5rem 2rem 5rem",
+	paddingTop: "20",
+	paddingInline: "8",
+	// 下のセクションから立ち上がる大きいフリル（95px）に内容が重ならない余白。
+	paddingBottom: "32",
 	display: "flex",
 	alignItems: "center",
 	justifyContent: "center",
@@ -114,7 +118,7 @@ const bioStyles = css({
 ---
 
 <!-- data-animate: セクション全体がスクロール時にフェードイン -->
-<section id="about" class={sectionStyles} data-animate>
+<section id="about" aria-label="自己紹介" class={sectionStyles} data-animate>
 	<div class={containerGrid}>
 		<!-- 左: ポラロイド写真 -->
 		<button
@@ -138,23 +142,13 @@ const bioStyles = css({
 
 		<!-- 右: 自己紹介 -->
 		<div class={infoStyles}>
-			<h2
-				class={css({
-					fontSize: "2.5rem",
-					marginBottom: "1rem",
-					color: "#4a4a4a",
-					fontFamily: '"Zen Maru Gothic", sans-serif',
-				})}
-			>
-				About me
-			</h2>
-
 			<div class={bioStyles}>
 				<p>ようかんです。</p>
 				<p>なんでもやさんです！</p>
 				<p>声の話も技術の話(web,インフラ,vrトラッカー)も服も</p>
 				<p>おうちで寝るのが好き</p>
 			</div>
+			<ActivityHistory />
 		</div>
 	</div>
 </section>
@@ -177,7 +171,7 @@ const bioStyles = css({
 			photoImg.src = photo.src;
 		};
 
-		// 先読み済みの写真（クリック時はここから取り出すので待たせない）
+		// 選ばれた写真だけ読み込み、切り替えるまでは他の写真を取得しない。
 		// sizes・srcset を表示用 img と揃えて、実際に表示されるのと同じ幅の画像を読む
 		const decoded = new Map<Photo, Promise<void>>();
 		const load = (photo: Photo) => {
@@ -193,8 +187,7 @@ const bioStyles = css({
 			return p;
 		};
 
-		// About が 1 画面ぶん手前まで来たら、表示する 1 枚 → 残りの順に読み込む。
-		// About を見ない人には通信が発生しない。
+		// About が近づいたら表示する 1 枚だけを読み込む。
 		const observer = new IntersectionObserver(
 			(entries) => {
 				if (!entries.some((entry) => entry.isIntersecting)) return;
@@ -202,7 +195,6 @@ const bioStyles = css({
 
 				show(photos[Math.floor(Math.random() * photos.length)]);
 				photoImg.alt = "ようかんの写真";
-				for (const photo of photos) load(photo);
 			},
 			{ rootMargin: "100% 0px" },
 		);
