@@ -4,6 +4,10 @@ import {
 	BUTTON_ICON,
 	BUTTON_TEXT,
 	FOOTER_BG,
+	GOODS_BORDER,
+	GOODS_HOVER_SHADOW,
+	GOODS_SHADOW,
+	GOODS_SURFACE,
 	SECTION_DARK_BG,
 	SECTION_LIGHT_BG,
 	SECTION_LIGHT_BOT,
@@ -45,10 +49,21 @@ export default defineConfig({
 			// css() の中では theme.ts の定数を import して使わず、ここのトークンを名前で参照する
 			// （import した値は Panda がビルド時に読み取れず、CSS が生成されないため）
 			tokens: {
+				fonts: {
+					body: { value: '"Zen Maru Gothic", system-ui, sans-serif' },
+				},
+				shadows: {
+					goods: { value: GOODS_SHADOW },
+					goodsHover: { value: GOODS_HOVER_SHADOW },
+				},
 				gradients: {
 					button: { value: BUTTON_BG },
 				},
 				colors: {
+					goods: {
+						surface: { value: GOODS_SURFACE },
+						border: { value: GOODS_BORDER },
+					},
 					section: {
 						lightBg:  { value: SECTION_LIGHT_BG },
 						lightTop: { value: SECTION_LIGHT_TOP },

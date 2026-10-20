@@ -1,0 +1,37 @@
+---
+import { css } from "@styled/css";
+import { goods } from "../../data/goods";
+import GoodsCard from "../goods/GoodsCard.astro";
+import SectionBackground from "../SectionBackground.astro";
+
+const innerStyles = css({
+	paddingTop: "36",
+	paddingBottom: "24",
+	paddingInline: { base: "6", md: "8" },
+	fontFamily: "body",
+});
+
+const headerStyles = css({ textAlign: "center", marginBottom: "12" });
+const titleStyles = css({ fontSize: "2.5rem", fontWeight: "bold", color: "text.primary", marginBottom: "2" });
+const subtitleStyles = css({ fontSize: "md", color: "text.secondary" });
+const gridStyles = css({
+	display: "grid",
+	gridTemplateColumns: { base: "minmax(0, 1fr)", md: "repeat(2, minmax(0, 1fr))" },
+	gap: "8",
+	maxWidth: "900px",
+	marginInline: "auto",
+	listStyle: "none",
+});
+---
+
+<SectionBackground id="goods" top bigTop>
+	<div class={innerStyles}>
+		<div class={headerStyles}>
+			<h2 class={titleStyles}>物販</h2>
+			<p class={subtitleStyles}>歌ったCDと、つくった衣装</p>
+		</div>
+		<ul class={gridStyles}>
+			{goods.map((item) => <li><GoodsCard item={item} /></li>)}
+		</ul>
+	</div>
+</SectionBackground>

@@ -39,6 +39,12 @@ export const BUTTON_TEXT = "#5a3a5a";
 /** ボタン内のアイコン色 */
 export const BUTTON_ICON = "#e07aa8";
 
+// ===== 物販カード =====
+export const GOODS_SURFACE = "#ffffff";
+export const GOODS_BORDER = "#f2c6db";
+export const GOODS_SHADOW = "0 6px 28px rgba(180,120,200,0.14)";
+export const GOODS_HOVER_SHADOW = "0 12px 32px rgba(180,120,200,0.24)";
+
 // ===== ようかん =====
 /** チョコミントのチップ（こげ茶の欠片を大小・縦横ばらばらに散らしたタイル。面ごとに位置をずらして使う） */
 const CHOCO_CHIPS = [
