@@ -1,0 +1,175 @@
+---
+import { css } from "@styled/css";
+import YokanSlicerParts from "./YokanSlicerParts.astro";
+
+/**
+ * YokanGrid — カード（WorkCard）を並べるグリッド。行ごとに画面端からようかんを切って出す。
+ * 子要素は data-yokan-card data-yokan-wait を付けたラッパーで包む。
+ * filters を渡すと絞り込みボタンが出る（カードの data-category と照合。?category= で初期選択）。
+ */
+
+interface Props {
+	/** 値 → ラベル。「すべて」は自動で先頭に付く */
+	filters?: Record<string, string>;
+	emptyText?: string;
+}
+
+const { filters, emptyText = "まだないよ" } = Astro.props;
+
+const filterBarStyles = css({
+	display: "flex",
+	justifyContent: "center",
+	flexWrap: "wrap",
+	gap: "0.75rem",
+	marginBottom: "3rem",
+});
+
+const filterButtonStyles = css({
+	padding: "0.45rem 1.4rem",
+	borderRadius: "999px",
+	border: "2px solid white",
+	backgroundColor: "rgba(255,255,255,0.8)",
+	color: "button.text",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontSize: "1rem",
+	fontWeight: "bold",
+	cursor: "pointer",
+	boxShadow: "0 3px 12px rgba(200,150,200,0.2)",
+	transition: "transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease",
+	_hover: {
+		transform: "translateY(-2px)",
+		boxShadow: "0 6px 18px rgba(200,150,200,0.35)",
+	},
+	_pressed: {
+		background: "token(gradients.button)",
+	},
+	_focusVisible: {
+		outline: "3px solid token(colors.button.icon)",
+		outlineOffset: "3px",
+	},
+});
+
+// 切り分けの糸・ようかんを絶対配置するため relative（はみ出た分は画面端で切れる）
+const gridStyles = css({
+	position: "relative",
+	display: "grid",
+	gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
+	gap: "2rem",
+});
+
+const emptyStyles = css({
+	textAlign: "center",
+	color: "#888",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	padding: "3rem 0",
+});
+---
+
+{
+	filters && (
+		<div class={filterBarStyles} role="group" aria-label="カテゴリで絞り込む">
+			{[["all", "すべて"], ...Object.entries(filters)].map(([value, label]) => (
+				<button type="button" class={filterButtonStyles} data-category-filter={value} aria-pressed={value === "all" ? "true" : "false"}>
+					{label}
+				</button>
+			))}
+		</div>
+	)
+}
+<div class={gridStyles} data-works-grid>
+	<slot />
+</div>
+<p class={emptyStyles} data-works-empty hidden>{emptyText}</p>
+<YokanSlicerParts />
+
+<script>
+	import type { YokanFlavor } from "@consts/theme";
+	import { randomFlavor } from "../../lib/yokan";
+	import { playYokanSlicer } from "../../lib/yokanCut";
+
+	const grid = document.querySelector<HTMLElement>("[data-works-grid]");
+	const empty = document.querySelector<HTMLElement>("[data-works-empty]");
+	const loafTemplate = document.querySelector<HTMLElement>("[data-yokan-loaf-template]");
+	const threadTemplate = document.querySelector<HTMLElement>("[data-yokan-thread]");
+	const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-category-filter]")];
+
+	if (grid && empty && loafTemplate && threadTemplate) {
+		const cards = [...grid.querySelectorAll<HTMLElement>("[data-yokan-card]")];
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		let observers: IntersectionObserver[] = [];
+
+		const applyFilter = (category: string) => {
+			for (const card of cards) card.hidden = category !== "all" && card.dataset.category !== category;
+			for (const b of buttons) b.setAttribute("aria-pressed", String(b.dataset.categoryFilter === category));
+			empty.hidden = cards.some((c) => !c.hidden);
+		};
+
+		// 行は表示位置で判定する（列数は画面幅・絞り込みで変わる）
+		const getRows = () => {
+			const rows: HTMLElement[][] = [];
+			let lastTop: number | null = null;
+			for (const card of cards) {
+				if (card.hidden) continue;
+				if (card.offsetTop !== lastTop) {
+					rows.push([]);
+					lastTop = card.offsetTop;
+				}
+				rows[rows.length - 1].push(card);
+			}
+			return rows;
+		};
+
+		// 行ごとに: ランダムな味（隣の行とは別）のようかんを、奇数行は左・偶数行は右の画面端で切って並べる
+		const layout = (animate: boolean) => {
+			let flavor: YokanFlavor | undefined;
+			getRows().forEach((rowCards, i) => {
+				flavor = randomFlavor(flavor);
+				const rowFlavor = flavor;
+				for (const card of rowCards) card.dataset.flavor = rowFlavor;
+				if (!animate) {
+					for (const card of rowCards) delete card.dataset.yokanWait;
+					return;
+				}
+
+				const observer = new IntersectionObserver(
+					(entries) => {
+						if (!entries.some((e) => e.isIntersecting)) return;
+						observer.disconnect();
+						playYokanSlicer({
+							loafTemplate,
+							host: grid,
+							cards: rowCards,
+							threadTemplate,
+							dir: i % 2 === 0 ? 1 : -1,
+							flavor: rowFlavor,
+							waiting: rowCards,
+						});
+					},
+					{ threshold: 0.3 },
+				);
+				observer.observe(rowCards[0]);
+				observers.push(observer);
+			});
+		};
+
+		const initial = new URLSearchParams(location.search).get("category");
+		applyFilter(initial && buttons.some((b) => b.dataset.categoryFilter === initial) ? initial : "all");
+		layout(!reduceMotion);
+
+		// 絞り込み後は切り直さず、並び替えたカードを行ごとに塗り直すだけ
+		for (const button of buttons) {
+			button.addEventListener("click", () => {
+				const category = button.dataset.categoryFilter ?? "all";
+				for (const o of observers) o.disconnect();
+				observers = [];
+				for (const card of cards) delete card.dataset.yokanWait;
+				applyFilter(category);
+				layout(false);
+				const url = new URL(location.href);
+				if (category === "all") url.searchParams.delete("category");
+				else url.searchParams.set("category", category);
+				history.replaceState(null, "", url);
+			});
+		}
+	}
+</script>

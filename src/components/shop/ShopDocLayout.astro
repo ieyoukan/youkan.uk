@@ -1,0 +1,59 @@
+---
+import { css } from "@styled/css";
+import Layout from "../../layouts/Layout.astro";
+import { markdownStyles } from "../../styles/markdown";
+import BackLink from "../BackLink.astro";
+
+// src/pages/shop/*.md のレイアウト（frontmatter の title / description を使う）
+interface Props {
+	frontmatter: {
+		title: string;
+		description?: string;
+		updated?: string;
+	};
+}
+
+const { title, description, updated } = Astro.props.frontmatter;
+
+const pageStyles = css({
+	minHeight: "100vh",
+	maxWidth: "900px",
+	margin: "0 auto",
+	padding: "6rem 1rem 8rem",
+	md: { padding: "6rem 2rem 8rem" },
+});
+
+const cardStyles = css({
+	backgroundColor: "rgba(255,255,255,0.94)",
+	borderRadius: "28px",
+	padding: { base: "2rem 1.25rem", md: "3rem 3rem" },
+	boxShadow: "0 8px 40px rgba(180,120,200,0.18)",
+});
+
+const titleStyles = css({
+	fontSize: "2.25rem",
+	fontWeight: "bold",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	color: "#4a4a4a",
+	marginBottom: "0.5rem",
+});
+
+const updatedStyles = css({
+	fontSize: "0.85rem",
+	color: "#999",
+	marginBottom: "2rem",
+});
+---
+
+<Layout title={`${title} — ようかんの物販`} description={description}>
+	<div class={pageStyles}>
+		<BackLink href="/shop" label="物販一覧に戻る" />
+		<article class={cardStyles}>
+			<h1 class={titleStyles}>{title}</h1>
+			{updated && <p class={updatedStyles}>最終更新: {updated}</p>}
+			<div class={markdownStyles}>
+				<slot />
+			</div>
+		</article>
+	</div>
+</Layout>

@@ -1,0 +1,151 @@
+---
+import { Image } from "astro:assets";
+import { getCollection, render } from "astro:content";
+import fs from "node:fs";
+import path from "node:path";
+import { css } from "@styled/css";
+import BackLink from "../../components/BackLink.astro";
+import WorkDetail from "../../components/works/WorkDetail.astro";
+import Layout from "../../layouts/Layout.astro";
+import { type BoothItem, boothPriceLabel, boothSummary, fetchBoothItems } from "../../lib/booth";
+import { getWorkImage } from "../../lib/workImage";
+
+// ビルド時に全商品ぶん生成（画像最適化のため。index.astro 参照）
+export const prerender = true;
+
+export async function getStaticPaths() {
+	const items = await fetchBoothItems();
+	return items.map((item) => ({ params: { id: item.id }, props: { item } }));
+}
+
+interface Props {
+	item: BoothItem;
+}
+
+const { item } = Astro.props;
+const [cover, ...gallery] = item.images;
+const { src: imgSrc } = await getWorkImage({ image: cover }, 1280);
+
+// 説明書・個別の規約（src/content/shop/{ID}.mdx）と配布ファイル（public/shop/{ID}/）
+const doc = (await getCollection("shop")).find((d) => d.id === item.id);
+const Content = doc ? (await render(doc)).Content : undefined;
+const labels = doc?.data.labels ?? {};
+const fileDir = path.join(process.cwd(), "public/shop", item.id);
+const files = fs.existsSync(fileDir) ? fs.readdirSync(fileDir).filter((f) => !f.startsWith(".")) : [];
+// 表示名の書き間違い（ファイル名のずれ）に気づけるようビルドエラーにする
+for (const file of Object.keys(labels)) {
+	if (!files.includes(file)) {
+		throw new Error(`[shop] public/shop/${item.id}/${file} がありません（src/content/shop/${item.id}.mdx の labels）`);
+	}
+}
+// labels に書いた順 → 残りはファイル名順
+const labeled = Object.keys(labels);
+const downloads = [...labeled, ...files.filter((f) => !labeled.includes(f)).sort()].map((file) => ({
+	label: labels[file] ?? file,
+	ext: path.extname(file).slice(1).toUpperCase(),
+	href: `/shop/${item.id}/${encodeURIComponent(file)}`,
+}));
+
+const downloadsStyles = css({
+	display: "grid",
+	gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)" },
+	gap: "0.75rem",
+	marginBottom: "2.5rem",
+});
+
+const downloadStyles = css({
+	display: "flex",
+	alignItems: "center",
+	gap: "0.75rem",
+	padding: "0.8rem 1.1rem",
+	borderRadius: "16px",
+	border: "2px solid rgba(255,182,213,0.7)",
+	backgroundColor: "rgba(255,248,251,0.9)",
+	color: "#5a3a5a !important",
+	fontWeight: "bold",
+	textDecoration: "none !important",
+	transition: "transform 0.2s ease, box-shadow 0.2s ease",
+	_hover: {
+		transform: "translateY(-2px)",
+		boxShadow: "0 6px 18px rgba(200,150,200,0.3)",
+	},
+});
+
+const fileBadgeStyles = css({
+	flexShrink: 0,
+	padding: "0.15rem 0.5rem",
+	borderRadius: "8px",
+	background: "token(gradients.button)",
+	fontSize: "0.75rem",
+});
+
+const galleryStyles = css({
+	display: "grid",
+	gridTemplateColumns: { base: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+	gap: "0.75rem",
+	marginBottom: "2.5rem",
+	"& a": { display: "block", lineHeight: 0 },
+	"& img": {
+		width: "100%",
+		aspectRatio: "1",
+		objectFit: "cover",
+		boxShadow: "0 4px 14px rgba(180,120,200,0.18)",
+		transition: "transform 0.2s ease",
+	},
+	"& a:hover img": { transform: "translateY(-3px)" },
+});
+
+const termsNoteStyles = css({
+	marginTop: "2.5rem",
+	padding: "1rem 1.25rem",
+	borderRadius: "16px",
+	border: "2px dashed rgba(180,220,255,0.9)",
+	backgroundColor: "rgba(240,248,255,0.8)",
+	fontSize: "0.95rem",
+});
+
+const pageStyles = css({
+	minHeight: "100vh",
+	maxWidth: "900px",
+	margin: "0 auto",
+	padding: "6rem 1rem 8rem",
+	md: { padding: "6rem 2rem 8rem" },
+});
+---
+
+<Layout title={`${item.name} — ようかんの物販`} description={boothSummary(item)} ogImage={cover}>
+	<div class={pageStyles}>
+		<BackLink href="/shop" label="物販一覧に戻る" />
+		<WorkDetail
+			title={item.name}
+			description={item.description}
+			imageSrc={imgSrc}
+			tags={[item.category, boothPriceLabel(item.price), ...item.tags]}
+			links={[{ label: "BOOTH でみる →", href: item.url, variant: "primary" }]}
+		>
+			{gallery.length > 0 && (
+				<div class={galleryStyles}>
+					{gallery.map((src) => (
+						<a href={src} target="_blank" rel="noopener noreferrer">
+							<Image src={src} inferSize width={480} format="webp" quality={85} alt={item.name} loading="lazy" />
+						</a>
+					))}
+				</div>
+			)}
+			{Content && <Content />}
+			{downloads.length > 0 && (
+				<div class={downloadsStyles}>
+					{downloads.map((d) => (
+						<a href={d.href} target="_blank" rel="noopener" class={downloadStyles}>
+							<span class={fileBadgeStyles}>{d.ext}</span>
+							<span>{d.label}</span>
+						</a>
+					))}
+				</div>
+			)}
+			<p class={termsNoteStyles}>
+				ご利用の前に <a href="/shop/terms">利用規約</a> を読んでね。商品ごとの決まりがあるときはそちらが優先です。
+			</p>
+		</WorkDetail>
+	</div>
+</Layout>

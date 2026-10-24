@@ -1,17 +1,41 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
+import { WORK_CATEGORIES, type WorkCategory } from "@consts/works";
 import { css } from "@styled/css";
 import BackLink from "../../components/BackLink.astro";
 import WorkCard from "../../components/works/WorkCard.astro";
-import YokanSlicerParts from "../../components/works/YokanSlicerParts.astro";
+import YokanGrid from "../../components/works/YokanGrid.astro";
 import Layout from "../../layouts/Layout.astro";
+import { boothSummary, fetchBoothItems } from "../../lib/booth";
 
 // ビルド時に生成（画像最適化のため。index.astro 参照）
 export const prerender = true;
 
-const works = (await getCollection("works")).sort(
-	(a: CollectionEntry<"works">, b: CollectionEntry<"works">) => a.data.order - b.data.order,
-);
+type Card = {
+	href: string;
+	title: string;
+	description: string;
+	image?: string;
+	url?: string;
+	tags: string[];
+	category: WorkCategory;
+};
+
+const works: Card[] = (await getCollection("works"))
+	.sort((a: CollectionEntry<"works">, b: CollectionEntry<"works">) => a.data.order - b.data.order)
+	.map((work) => ({ href: `/works/${work.id}`, ...work.data }));
+
+// BOOTH の商品（VRChat 衣装など）は /shop にまとめ、ここでは「創作」として並べる
+const boothItems: Card[] = (await fetchBoothItems()).map((item) => ({
+	href: `/shop/${item.id}`,
+	title: item.name,
+	description: boothSummary(item),
+	image: item.images[0],
+	tags: [item.category, "BOOTH"],
+	category: "creative",
+}));
+
+const cards = [...works, ...boothItems];
 
 const pageStyles = css({
 	minHeight: "100vh",
@@ -22,7 +46,7 @@ const pageStyles = css({
 
 const headerStyles = css({
 	textAlign: "center",
-	marginBottom: "4rem",
+	marginBottom: "2rem",
 });
 
 const titleStyles = css({
@@ -32,92 +56,27 @@ const titleStyles = css({
 	color: "#4a4a4a",
 	marginBottom: "0.5rem",
 });
-
-// 切り分けの糸・ようかんを絶対配置するため relative（はみ出た分は画面端で切れる）
-const gridStyles = css({
-	position: "relative",
-	display: "grid",
-	gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
-	gap: "2rem",
-});
-
 ---
 
-<Layout title="作品一覧 — ようかんのホームページ" description="ようかんが制作したWebアプリやツールの一覧。各作品の紹介、使用技術、公開サイト、GitHubへのリンクを掲載しています。">
+<Layout title="作品一覧 — ようかんのホームページ" description="ようかんが制作したWebアプリやツール（開発）と、VRChat 向けの衣装など（創作）の一覧。各作品の紹介、使用技術、公開サイト、GitHubへのリンクを掲載しています。">
 	<div class={pageStyles}>
 		<BackLink href="/" label="ホームに戻る" />
 		<div class={headerStyles}>
 			<h1 class={titleStyles}>作品一覧</h1>
 		</div>
-		<div class={gridStyles} data-works-grid>
-			{works.map((work: CollectionEntry<"works">) => (
-				<div data-yokan-card data-yokan-wait>
+		<YokanGrid filters={WORK_CATEGORIES}>
+			{cards.map((card) => (
+				<div data-yokan-card data-yokan-wait data-category={card.category}>
 					<WorkCard
-						slug={work.id}
-						title={work.data.title}
-						description={work.data.description}
-						image={work.data.image}
-						url={work.data.url}
-						tags={work.data.tags}
+						href={card.href}
+						title={card.title}
+						description={card.description}
+						image={card.image}
+						url={card.url}
+						tags={card.tags}
 					/>
 				</div>
 			))}
-		</div>
-		<YokanSlicerParts />
+		</YokanGrid>
 	</div>
 </Layout>
-
-<script>
-	import type { YokanFlavor } from "@consts/theme";
-	import { randomFlavor } from "../../lib/yokan";
-	import { playYokanSlicer } from "../../lib/yokanCut";
-
-	// 行ごとに: ランダムな味（隣の行とは別）のようかんを、奇数行は左・偶数行は右の画面端で切って並べる
-	const grid = document.querySelector<HTMLElement>("[data-works-grid]");
-	const loafTemplate = document.querySelector<HTMLElement>("[data-yokan-loaf-template]");
-	const threadTemplate = document.querySelector<HTMLElement>("[data-yokan-thread]");
-
-	if (grid && loafTemplate && threadTemplate) {
-		// 行は表示位置で判定する（列数は画面幅で変わる）
-		const rows: HTMLElement[][] = [];
-		let lastTop: number | null = null;
-		for (const card of grid.querySelectorAll<HTMLElement>("[data-yokan-card]")) {
-			if (card.offsetTop !== lastTop) {
-				rows.push([]);
-				lastTop = card.offsetTop;
-			}
-			rows[rows.length - 1].push(card);
-		}
-
-		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-		let flavor: YokanFlavor | undefined;
-
-		rows.forEach((cards, i) => {
-			flavor = randomFlavor(flavor);
-			const rowFlavor = flavor;
-			for (const card of cards) card.dataset.flavor = rowFlavor;
-			if (reduceMotion) {
-				for (const card of cards) delete card.dataset.yokanWait;
-				return;
-			}
-
-			const observer = new IntersectionObserver(
-				(entries) => {
-					if (!entries.some((e) => e.isIntersecting)) return;
-					observer.disconnect();
-					playYokanSlicer({
-						loafTemplate,
-						host: grid,
-						cards,
-						threadTemplate,
-						dir: i % 2 === 0 ? 1 : -1,
-						flavor: rowFlavor,
-						waiting: cards,
-					});
-				},
-				{ threshold: 0.3 },
-			);
-			observer.observe(cards[0]);
-		});
-	}
-</script>

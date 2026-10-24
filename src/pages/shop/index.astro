@@ -1,0 +1,98 @@
+---
+import { css, cx } from "@styled/css";
+import BackLink from "../../components/BackLink.astro";
+import GoodsCard from "../../components/goods/GoodsCard.astro";
+import Layout from "../../layouts/Layout.astro";
+import { BOOTH_SHOP_URL } from "../../lib/booth";
+import { getGoods } from "../../lib/goods";
+
+// ビルド時に生成（画像最適化のため。index.astro 参照）
+export const prerender = true;
+
+const goods = await getGoods();
+
+const pageStyles = css({
+	minHeight: "100vh",
+	padding: "6rem 2rem 8rem",
+	maxWidth: "1200px",
+	margin: "0 auto",
+	fontFamily: "body",
+});
+
+const headerStyles = css({
+	textAlign: "center",
+	marginBottom: "3rem",
+});
+
+const titleStyles = css({
+	fontSize: "3rem",
+	fontWeight: "bold",
+	color: "#4a4a4a",
+	marginBottom: "0.5rem",
+});
+
+const leadStyles = css({
+	fontSize: "1rem",
+	color: "#777",
+	marginBottom: "1.75rem",
+});
+
+const actionsStyles = css({
+	display: "flex",
+	justifyContent: "center",
+	flexWrap: "wrap",
+	gap: "1rem",
+});
+
+const actionStyles = css({
+	display: "inline-flex",
+	alignItems: "center",
+	padding: "0.7rem 2rem",
+	borderRadius: "999px",
+	border: "2px solid white",
+	fontWeight: "bold",
+	textDecoration: "none",
+	boxShadow: "0 4px 16px rgba(200,150,200,0.25)",
+	transition: "transform 0.2s ease, box-shadow 0.2s ease",
+	_hover: {
+		transform: "translateY(-2px)",
+		boxShadow: "0 8px 24px rgba(200,150,200,0.4)",
+	},
+});
+
+const actionPrimaryStyles = css({
+	background: "token(gradients.button)",
+	color: "button.text",
+});
+
+const actionSubStyles = css({
+	backgroundColor: "rgba(255,255,255,0.85)",
+	color: "button.text",
+});
+
+const gridStyles = css({
+	display: "grid",
+	gridTemplateColumns: { base: "minmax(0, 1fr)", md: "repeat(2, minmax(0, 1fr))", lg: "repeat(3, minmax(0, 1fr))" },
+	gap: "8",
+	listStyle: "none",
+});
+---
+
+<Layout title="物販 — ようかんのホームページ" description="ようかんが BOOTH で配布・販売している VRChat 向けの衣装・アクセサリーや、歌った CD など。衣装の説明書・利用規約もここに置いています。">
+	<div class={pageStyles}>
+		<BackLink href="/" label="ホームに戻る" />
+		<div class={headerStyles}>
+			<h1 class={titleStyles}>物販</h1>
+			<p class={leadStyles}>歌ったCDと、つくった衣装。衣装の説明書や利用規約は各商品のページにあります</p>
+			<div class={actionsStyles}>
+				<a href={BOOTH_SHOP_URL} target="_blank" rel="noopener noreferrer" class={cx(actionStyles, actionPrimaryStyles)}>
+					BOOTH をひらく ↗
+				</a>
+				<a href="/shop/terms" class={cx(actionStyles, actionSubStyles)}>利用規約</a>
+			</div>
+		</div>
+		<ul class={gridStyles}>
+			{goods.map((item) => <li><GoodsCard item={item} /></li>)}
+		</ul>
+	</div>
+</Layout>

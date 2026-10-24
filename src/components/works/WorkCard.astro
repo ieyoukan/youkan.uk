@@ -10,7 +10,7 @@ import Yokan from "../Yokan.astro";
  */
 
 interface Props {
-	slug: string;
+	href: string;
 	title: string;
 	description: string;
 	image?: string;
@@ -18,7 +18,7 @@ interface Props {
 	tags?: string[];
 }
 
-const { slug, title, description, image, url, tags = [] } = Astro.props;
+const { href, title, description, image, url, tags = [] } = Astro.props;
 
 // 断面の表示幅は 262px 程度なので、高解像度端末向けに 2 倍強で生成する
 const { src: imgSrc } = await getWorkImage({ image, url }, 640);
@@ -130,7 +130,7 @@ const descStyles = css({
 });
 ---
 
-<a href={`/works/${slug}`} class={cardStyles}>
+<a href={href} class={cardStyles}>
 	<div class={stageStyles} data-yokan-stage>
 		<div class={shadowStyles} data-yokan-shadow aria-hidden="true"></div>
 		<Yokan class={pieceStyles} data-yokan-piece>

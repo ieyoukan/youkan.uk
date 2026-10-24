@@ -1,0 +1,178 @@
+---
+import { css, cx } from "@styled/css";
+import { markdownStyles } from "../../styles/markdown";
+
+/**
+ * WorkDetail — 作品・商品の詳細ページの本体（白いカード）。
+ * 本文（Markdown など）は slot に渡すと点線の下に載る。
+ */
+
+export type DetailLink = {
+	label: string;
+	href: string;
+	variant: "primary" | "dark";
+};
+
+interface Props {
+	title: string;
+	description: string;
+	imageSrc: string;
+	tags?: string[];
+	links?: DetailLink[];
+}
+
+const { title, description, imageSrc, tags = [], links = [] } = Astro.props;
+// 空の本文（条件付きで何も渡らなかった場合も含む）なら点線ごと出さない
+const body = Astro.slots.has("default") ? await Astro.slots.render("default") : "";
+
+// 動画背景の上でも読めるよう、内容は白いカードに載せる
+const cardStyles = css({
+	backgroundColor: "rgba(255,255,255,0.94)",
+	borderRadius: "28px",
+	padding: { base: "1rem 1rem 2rem", md: "1.5rem 2.5rem 3rem" },
+	boxShadow: "0 8px 40px rgba(180,120,200,0.18)",
+});
+
+const heroStyles = css({
+	borderRadius: "24px",
+	overflow: "hidden",
+	aspectRatio: "16/9",
+	marginBottom: { base: "2rem", md: "2.5rem" },
+	boxShadow: "0 8px 40px rgba(180,120,200,0.2)",
+});
+
+const imgStyles = css({
+	width: "100%",
+	height: "100%",
+	objectFit: "cover",
+	display: "block",
+});
+
+const titleStyles = css({
+	fontSize: "2.5rem",
+	fontWeight: "bold",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	color: "#4a4a4a",
+	marginBottom: "1rem",
+});
+
+const tagsStyles = css({
+	display: "flex",
+	gap: "0.5rem",
+	flexWrap: "wrap",
+	marginBottom: "1.5rem",
+});
+
+const tagStyles = css({
+	fontSize: "0.8rem",
+	padding: "0.25rem 0.75rem",
+	borderRadius: "999px",
+	background: "linear-gradient(135deg, rgba(255,200,220,0.8), rgba(180,220,255,0.8))",
+	color: "#7a3a7a",
+	fontWeight: "bold",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+});
+
+// 説明は BOOTH の説明文のように改行を含むことがあるのでそのまま折り返す
+const descStyles = css({
+	fontSize: "1.1rem",
+	lineHeight: 1.8,
+	color: "#555",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	marginBottom: "2.5rem",
+	whiteSpace: "pre-wrap",
+	overflowWrap: "anywhere",
+});
+
+const bodyStyles = css({
+	marginTop: "3rem",
+	paddingTop: "2rem",
+	borderTop: "2px dashed rgba(255,182,213,0.8)",
+	fontSize: "1.05rem",
+});
+
+const linkUrlStyles = css({
+	fontSize: "0.8rem",
+	opacity: 0.65,
+	fontWeight: "normal",
+	display: "block",
+	overflow: "hidden",
+	textOverflow: "ellipsis",
+	whiteSpace: "nowrap",
+	maxWidth: "100%",
+});
+
+const linksStyles = css({
+	display: "flex",
+	flexDirection: "column",
+	gap: "1rem",
+	marginTop: "0.5rem",
+});
+
+const linkStyles = css({
+	display: "flex",
+	flexDirection: "column",
+	alignItems: "center",
+	justifyContent: "center",
+	padding: "1.1rem 2rem",
+	borderRadius: "20px",
+	fontFamily: '"Zen Maru Gothic", sans-serif',
+	fontWeight: "bold",
+	fontSize: "1.15rem",
+	textDecoration: "none",
+	width: "100%",
+	transition: "transform 0.2s ease, box-shadow 0.2s ease",
+	_hover: {
+		transform: "translateY(-3px)",
+		boxShadow: "0 10px 28px rgba(180,120,200,0.35)",
+	},
+});
+
+const linkVariantStyles = {
+	primary: css({
+		background: "linear-gradient(135deg, rgba(255,182,213,0.95), rgba(180,220,255,0.95))",
+		color: "#5a3a5a",
+		boxShadow: "0 4px 16px rgba(200,150,200,0.25)",
+	}),
+	dark: css({
+		background: "rgba(40,40,50,0.88)",
+		color: "white",
+		boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+	}),
+};
+---
+
+<article class={cardStyles}>
+	<div class={heroStyles}>
+		<img src={imageSrc} alt={title} class={imgStyles} />
+	</div>
+
+	<h1 class={titleStyles}>{title}</h1>
+
+	{tags.length > 0 && (
+		<div class={tagsStyles}>
+			{tags.map((t) => <span class={tagStyles}>{t}</span>)}
+		</div>
+	)}
+
+	<p class={descStyles}>{description}</p>
+
+	{links.length > 0 && (
+		<div class={linksStyles}>
+			{links.map((link) => (
+				<a href={link.href} target="_blank" rel="noopener noreferrer" class={cx(linkStyles, linkVariantStyles[link.variant])}>
+					<span>
+						{link.label}
+						<span class={linkUrlStyles}>{link.href}</span>
+					</span>
+				</a>
+			))}
+		</div>
+	)}
+
+	{body.trim() && (
+		<div class={cx(markdownStyles, bodyStyles)}>
+			<Fragment set:html={body} />
+		</div>
+	)}
+</article>

@@ -1,13 +1,15 @@
 ---
 import { Image } from "astro:assets";
 import { css } from "@styled/css";
-import type { GoodsItem } from "../../data/goods";
+import type { Goods } from "../../lib/goods";
 
 interface Props {
-	item: GoodsItem;
+	item: Goods;
 }
 
 const { item } = Astro.props;
+// BOOTH の画像（URL）はサイズが分からないので取得して調べる
+const imageSource = typeof item.image === "string" ? { src: item.image, inferSize: true as const } : { src: item.image };
 
 const cardStyles = css({
 	display: "flex",
@@ -56,8 +58,10 @@ const categoryStyles = css({
 	paddingInline: "3",
 });
 
-const titleStyles = css({ fontSize: "xl", fontWeight: "bold", lineHeight: "1.6" });
-const descriptionStyles = css({ fontSize: "sm", lineHeight: "1.8", color: "text.secondary" });
+const badgesStyles = css({ display: "flex", flexWrap: "wrap", gap: "2" });
+
+const titleStyles = css({ fontSize: "xl", fontWeight: "bold", lineHeight: "1.6", lineClamp: "2" });
+const descriptionStyles = css({ fontSize: "sm", lineHeight: "1.8", color: "text.secondary", lineClamp: "3" });
 const buttonStyles = css({
 	display: "inline-flex",
 	alignItems: "center",
@@ -75,21 +79,28 @@ const buttonStyles = css({
 });
 ---
 
-<a href={item.url} class={cardStyles} target="_blank" rel="noopener noreferrer">
+<a href={item.href} class={cardStyles} {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
 	<Image
-		src={item.image}
+		{...imageSource}
 		alt={`${item.title}の商品画像`}
 		format="webp"
 		quality={85}
 		widths={[320, 480, 800]}
-		sizes="(min-width: 768px) 400px, calc(100vw - 4rem)"
+		sizes="(min-width: 768px) 320px, 260px"
 		class={imageStyles}
 		loading="lazy"
 	/>
 	<div class={contentStyles}>
-		<span class={categoryStyles}>{item.category}</span>
+		<div class={badgesStyles}>
+			<span class={categoryStyles}>{item.category}</span>
+			{item.price && <span class={categoryStyles}>{item.price}</span>}
+		</div>
 		<h3 class={titleStyles}>{item.title}</h3>
 		<p class={descriptionStyles}>{item.description}</p>
-		<span class={buttonStyles}>BOOTHで見る <span aria-hidden="true">↗</span></span>
+		{item.external ? (
+			<span class={buttonStyles}>BOOTHで見る <span aria-hidden="true">↗</span></span>
+		) : (
+			<span class={buttonStyles}>くわしく見る <span aria-hidden="true">→</span></span>
+		)}
 	</div>
 </a>

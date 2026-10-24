@@ -104,7 +104,7 @@ const footerStyles = css({
 			{previewWorks.map((work: CollectionEntry<"works">, i: number) => (
 				<div class={i < 3 ? cardWrapStyles : cx(cardWrapStyles, extraCardStyles)} data-yokan-card>
 					<WorkCard
-						slug={work.id}
+						href={`/works/${work.id}`}
 						title={work.data.title}
 						description={work.data.description}
 						image={work.data.image}

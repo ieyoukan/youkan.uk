@@ -1,26 +1,87 @@
 ---
 import { css } from "@styled/css";
-import { goods } from "../../data/goods";
+import { getGoods } from "../../lib/goods";
 import GoodsCard from "../goods/GoodsCard.astro";
 import SectionBackground from "../SectionBackground.astro";
 
+const goods = await getGoods();
+
 const innerStyles = css({
+	position: "relative",
 	paddingTop: "36",
 	paddingBottom: "24",
-	paddingInline: { base: "6", md: "8" },
 	fontFamily: "body",
 });
 
-const headerStyles = css({ textAlign: "center", marginBottom: "12" });
+const headerStyles = css({ textAlign: "center", marginBottom: "10", paddingInline: "6" });
 const titleStyles = css({ fontSize: "2.5rem", fontWeight: "bold", color: "text.primary", marginBottom: "2" });
 const subtitleStyles = css({ fontSize: "md", color: "text.secondary" });
-const gridStyles = css({
-	display: "grid",
-	gridTemplateColumns: { base: "minmax(0, 1fr)", md: "repeat(2, minmax(0, 1fr))" },
-	gap: "8",
-	maxWidth: "900px",
-	marginInline: "auto",
+
+// 横スクロールのトラック（カードが少なくて収まるときは中央に寄せる）
+const trackStyles = css({
+	display: "flex",
+	alignItems: "stretch",
+	gap: "6",
+	overflowX: "auto",
+	paddingBlock: "2 6",
+	paddingInline: { base: "6", md: "10" },
+	scrollPaddingInline: { base: "6", md: "10" },
+	scrollSnapType: "x mandatory",
+	scrollbarWidth: "none",
 	listStyle: "none",
+	"&::-webkit-scrollbar": { display: "none" },
+	"& > li": {
+		flex: { base: "0 0 260px", md: "0 0 320px" },
+		scrollSnapAlign: "start",
+	},
+	"& > li:first-child": { marginInlineStart: "auto" },
+	"& > li:last-child": { marginInlineEnd: "auto" },
+});
+
+const navStyles = css({
+	display: "flex",
+	justifyContent: "center",
+	alignItems: "center",
+	gap: "4",
+	marginTop: "4",
+});
+
+const arrowStyles = css({
+	display: "grid",
+	placeItems: "center",
+	width: "2.75rem",
+	height: "2.75rem",
+	borderRadius: "full",
+	border: "2px solid white",
+	backgroundGradient: "button",
+	color: "button.text",
+	fontSize: "lg",
+	fontWeight: "bold",
+	cursor: "pointer",
+	boxShadow: "goods",
+	transition: "transform 0.2s ease, opacity 0.2s ease",
+	_hover: { transform: "scale(1.08)" },
+	_disabled: { opacity: 0.35, cursor: "default", _hover: { transform: "none" } },
+	_focusVisible: { outline: "3px solid", outlineColor: "button.text", outlineOffset: "3px" },
+	_motionReduce: { transition: "none" },
+});
+
+const moreStyles = css({
+	display: "inline-flex",
+	alignItems: "center",
+	gap: "2",
+	paddingBlock: "2.5",
+	paddingInline: "7",
+	borderRadius: "full",
+	backgroundColor: "goods.surface",
+	border: "2px dashed",
+	borderColor: "goods.border",
+	color: "button.text",
+	fontWeight: "bold",
+	textDecoration: "none",
+	transition: "transform 0.2s ease",
+	_hover: { transform: "translateY(-2px)" },
+	_motionReduce: { transition: "none", _hover: { transform: "none" } },
 });
 ---
 
@@ -30,8 +91,42 @@ const gridStyles = css({
 			<h2 class={titleStyles}>物販</h2>
 			<p class={subtitleStyles}>歌ったCDと、つくった衣装</p>
 		</div>
-		<ul class={gridStyles}>
+		<ul class={trackStyles} data-goods-track>
 			{goods.map((item) => <li><GoodsCard item={item} /></li>)}
 		</ul>
+		<div class={navStyles}>
+			<button type="button" class={arrowStyles} data-goods-prev aria-label="前の商品へ">←</button>
+			<a href="/shop" class={moreStyles}>物販一覧 <span aria-hidden="true">→</span></a>
+			<button type="button" class={arrowStyles} data-goods-next aria-label="次の商品へ">→</button>
+		</div>
 	</div>
 </SectionBackground>
+
+<script>
+	const track = document.querySelector<HTMLElement>("[data-goods-track]");
+	const prev = document.querySelector<HTMLButtonElement>("[data-goods-prev]");
+	const next = document.querySelector<HTMLButtonElement>("[data-goods-next]");
+
+	if (track && prev && next) {
+		// カード 1 枚ぶん（カード幅 + 間）ずつ送る
+		const step = () => {
+			const items = track.children;
+			if (items.length < 2) return track.clientWidth;
+			return (items[1] as HTMLElement).offsetLeft - (items[0] as HTMLElement).offsetLeft;
+		};
+		const update = () => {
+			// 全部収まっているときは矢印ごと出さない
+			const scrollable = track.scrollWidth > track.clientWidth + 1;
+			prev.hidden = !scrollable;
+			next.hidden = !scrollable;
+			prev.disabled = track.scrollLeft <= 1;
+			next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+		};
+		const smooth = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+		prev.addEventListener("click", () => track.scrollBy({ left: -step(), behavior: smooth }));
+		next.addEventListener("click", () => track.scrollBy({ left: step(), behavior: smooth }));
+		track.addEventListener("scroll", update, { passive: true });
+		window.addEventListener("resize", update);
+		update();
+	}
+</script>

@@ -24,12 +24,12 @@ export default defineConfig({
 			filter: (page) => !/\/(?:404|500)\/?$/.test(new URL(page).pathname),
 		}),
 		{
-			// /misskey 配下を全てビルド時に生成する（画像最適化のため。src/pages/index.astro 参照）
+			// /misskey・/shop 配下を全てビルド時に生成する（画像最適化のため。src/pages/index.astro 参照）
 			// .md ページは `export const prerender` を書けないため、ルート設定フックでまとめて指定する
-			name: "prerender-misskey",
+			name: "prerender-md-pages",
 			hooks: {
 				"astro:route:setup": ({ route }) => {
-					if (route.component.startsWith("src/pages/misskey/")) route.prerender = true;
+					if (/^src\/pages\/(misskey|shop)\//.test(route.component)) route.prerender = true;
 				},
 			},
 		},
